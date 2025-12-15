@@ -1250,39 +1250,48 @@ window.Game = {
     turnLocked: false, currentActor: 0, currentVoice: null, voiceVol: 0.8, upgrades: {}, 
 
     // === 找到 Game 对象里的 playVoice，替换为这个 ===
+   // === 替换原来的 playVoice 函数 ===
     playVoice(id, type, customSrc = null) {
         // 1. 停止上一句
         this.stopVoice();
 
-        // 2. 路径处理：
-        // 如果你有 'audio' 文件夹，请保持 'audio/'
-        // 如果音频文件和 html 在一起，请改成 '' (空字符串)
-        const folder = ''; // <--- 🔴 试着改成空字符串，或者 'audio/' 看看哪个能响
+        // 🔴 关键设置：你的音频文件在哪里？
+        // 如果文件在 audio 文件夹里，请保留 'audio/'
+        // 如果文件和 html 在同一个目录，请改成 '' (就是两个单引号)
+        const folder = 'audio/'; 
         
+        // 生成文件名
         let fileName = customSrc ? customSrc : (id === 'boss' ? type : `v_${id}_${type}.wav`);
-        
-        console.log("尝试播放音频:", folder + fileName); // F12看控制台，看路径对不对
+        let fullPath = folder + fileName;
 
-        const audio = new Audio(folder + fileName);
+        // 2. 创建音频对象
+        const audio = new Audio(fullPath);
         
-        // 3. 立刻应用当前音量
+        // 3. 设置音量
         audio.volume = this.voiceVol; 
-        
         this.currentVoice = audio;
         
-        // 4. 播放并捕获错误 (解决没有文件导致的静默失败)
+        // 4. 尝试播放
         const playPromise = audio.play();
+        
         if (playPromise !== undefined) {
             playPromise.catch(error => {
-                console.warn("播放失败 (可能是文件缺失或浏览器限制):", error);
-                // 自动回退：如果 wav 播不了，试一下 mp3
+                // 🔴 调试模式：如果手机上没声音，这里会弹窗告诉你原因！
+                // 等修好后，可以把下面这行 alert 删掉
+                // alert("播放失败！我在找这个文件：" + fullPath);
+
+                console.warn("播放失败:", fullPath, error);
+
+                // 自动回退：尝试播放 mp3
                 if (fileName.endsWith('.wav')) {
                     const mp3Name = fileName.replace('.wav', '.mp3');
-                    console.log("尝试回退播放 mp3:", mp3Name);
                     const fallback = new Audio(folder + mp3Name);
                     fallback.volume = this.voiceVol;
                     this.currentVoice = fallback;
-                    fallback.play().catch(()=>{});
+                    fallback.play().catch(e => {
+                        // 如果 mp3 也失败了，那肯定是文件没放对位置
+                        console.log("MP3也失败了");
+                    });
                 }
             });
         }
