@@ -13,47 +13,58 @@
         --red: #d64f4f; --blue: #5fa8d3; --purple: #b388eb; --green: #6aba84;
         --panel-bg: rgba(15, 32, 39, 0.95);
     }
-   body
- { 
-    margin: 0
-; 
-    background: #000
-; 
-    /* 🔴 删掉 overflow: hidden; 改为 auto，允许必要时滚动 */
-    overflow
-: auto; 
-    font-family: 'Ma Shan Zheng'
-, cursive; 
-    /* 🔴 删掉 height: 100vh; 改为 min-height: 100vh; */
-    min-height: 100vh
-;
-    display
-: flex; 
-    justify-content
-: center; 
-    align-items
-: center; 
-    color: #fff
-; 
-}
-    #scale-wrapper
- { 
-    width: 1920px
-; 
-    height: 1080px
-; 
-    position
-: relative; 
-    /* 🔴 关键：取消 flex-shrink，防止被手机屏幕挤压变形 */
-    flex-shrink: 0
-; 
-    transform-origin: center top; /*以此为基点缩放*/
-    will-change: transform; 
-    /* 🔴 增加 overflow: hidden 确保特效不出界 */
-    overflow
-: hidden; 
-}
-    #game-app { width: 100%; height: 100%; position: relative; background: #000; box-shadow: 0 0 100px #000; overflow: hidden; }
+    
+    body { 
+        margin: 0; 
+        background: #000; 
+        /* 🔴 关键改动：彻底禁止滚动，像APP一样 */
+        overflow: hidden; 
+        width: 100vw; 
+        height: 100vh;
+        font-family: 'Ma Shan Zheng', cursive; 
+        display: flex; 
+        justify-content: center; 
+        align-items: center; 
+        color: #fff; 
+        /* 禁止手机上的双击缩放和长按选中 */
+        touch-action: none; 
+        -webkit-user-select: none;
+        user-select: none;
+    }
+
+    #scale-wrapper { 
+        width: 1920px; 
+        height: 1080px; 
+        position: absolute; /* 🔴 改为绝对定位 */
+        /* 🔴 强制居中 */
+        top: 50%;
+        left: 50%;
+        /* 这里的 transform 会在 JS 里被覆盖，但先写个默认值 */
+        transform: translate(-50%, -50%); 
+        transform-origin: center center;
+        background: #000;
+        box-shadow: 0 0 50px rgba(0,0,0,0.5);
+        overflow: hidden; 
+    }
+
+    #game-app { width: 100%; height: 100%; position: relative; background: #000; overflow: hidden; }
+
+    /* 🔴 新增：手机竖屏时的提示层 */
+    #rotate-hint {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: #000; z-index: 99999;
+        display: none; /* 默认隐藏 */
+        flex-direction: column; justify-content: center; align-items: center;
+        color: var(--gold); text-align: center;
+    }
+    #rotate-hint img { width: 80px; margin-bottom: 20px; animation: rotatePhone 2s infinite; }
+    @keyframes rotatePhone { 0%{transform:rotate(0deg);} 50%{transform:rotate(-90deg);} 100%{transform:rotate(0deg);} }
+
+    /* 如果屏幕是竖着的（高 > 宽），显示提示层 */
+    @media screen and (orientation: portrait) {
+        #rotate-hint { display: flex !important; }
+        #scale-wrapper { display: none !important; }
+    }
     
     .scene { position: absolute; top:0; left:0; width:100%; height:100%; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10; pointer-events: auto; }
     #scene-menu { background: url('bg_new.jpg') center center no-repeat; background-size: cover; justify-content: flex-start !important; padding-top: 80px; background-color: #000; }
@@ -641,6 +652,10 @@
 </style>
 </head>
 <body>
+<div id="rotate-hint">
+    <div style="font-size: 50px;">📱</div>
+    <h2 style="margin-top:20px;">为了最佳体验<br>请旋转手机至横屏</h2>
+</div>
 
 <div id="scale-wrapper">
     <div id="game-app">
@@ -834,52 +849,10 @@
 ```html
 <script>/* === 在 <script> 标签的 第一行 插入或替换这段代码 === */
 
-function resize() {
-    const wrapper = document.getElementById('scale-wrapper');
-    const app = document.getElementById('game-app');
-    
-    // 获取当前窗口宽高
-    const w = window.innerWidth;
-    const h = window.innerHeight;
-    
-    // 计算缩放比例：我们要把 1920 宽的东西塞进当前屏幕
-    // 主要是为了适配宽度，防止左右划不动
-    let scale = w / 1920;
-    
-    // 如果是竖屏（高 > 宽），我们稍微放大一点点，不然太小了看不清
-    // 用户可以通过手指缩放自己调整
-    if (h > w) {
-        scale = w / 1920; // 竖屏模式下保持宽度适配
-        wrapper.style.transformOrigin = 'left top'; // 从左上角开始对齐
-    } else {
-        // 横屏模式：尝试适配高度，但不超过宽度限制
-        scale = Math.min(w / 1920, h / 1080);
-        wrapper.style.transformOrigin = 'center top';
-    }
-
-    wrapper.style.transform = `scale(${scale})`;
-    
-    // 🔴 这一步是为了让容器的高度撑开 body，防止被截断
-    // 缩放后的实际高度
-    const actualHeight = 1080 * scale; 
-    // 如果实际高度小于屏幕高度，就居中；否则就让它长下去
-    if (actualHeight < h) {
-        wrapper.style.marginTop = (h - actualHeight) / 2 + 'px';
-    } else {
-        wrapper.style.marginTop = '0px';
-    }
-}
-
-// 监听窗口变化，但加个延时防止手机旋转时瞬间崩溃
-let resizeTimer;
-window.onresize = function() {
-    clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(resize, 200);
-};
-
-// 初始化调用
-setTimeout(resize, 100);
-
+<div id="rotate-hint">
+    <div style="font-size: 50px;">📱</div>
+    <h2 style="margin-top:20px;">为了最佳体验<br>请旋转手机至横屏</h2>
+</div>
 // ==========================================
 // 1. 角色数据 (已合并：特效版的数值/VFX + 剧情版的故事/羁绊)
 // ==========================================
