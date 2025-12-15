@@ -2,7 +2,6 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=3.0, user-scalable=yes">
     <title>异兽拓罗 (V9.5 传说剧情版)</title>
     <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=ZCOOL+XiaoWei&display=swap" rel="stylesheet">
     <style>
@@ -13,58 +12,9 @@
         --red: #d64f4f; --blue: #5fa8d3; --purple: #b388eb; --green: #6aba84;
         --panel-bg: rgba(15, 32, 39, 0.95);
     }
-    
-    body { 
-        margin: 0; 
-        background: #000; 
-        /* 🔴 关键改动：彻底禁止滚动，像APP一样 */
-        overflow: hidden; 
-        width: 100vw; 
-        height: 100vh;
-        font-family: 'Ma Shan Zheng', cursive; 
-        display: flex; 
-        justify-content: center; 
-        align-items: center; 
-        color: #fff; 
-        /* 禁止手机上的双击缩放和长按选中 */
-        touch-action: none; 
-        -webkit-user-select: none;
-        user-select: none;
-    }
-
-    #scale-wrapper { 
-        width: 1920px; 
-        height: 1080px; 
-        position: absolute; /* 🔴 改为绝对定位 */
-        /* 🔴 强制居中 */
-        top: 50%;
-        left: 50%;
-        /* 这里的 transform 会在 JS 里被覆盖，但先写个默认值 */
-        transform: translate(-50%, -50%); 
-        transform-origin: center center;
-        background: #000;
-        box-shadow: 0 0 50px rgba(0,0,0,0.5);
-        overflow: hidden; 
-    }
-
-    #game-app { width: 100%; height: 100%; position: relative; background: #000; overflow: hidden; }
-
-    /* 🔴 新增：手机竖屏时的提示层 */
-    #rotate-hint {
-        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-        background: #000; z-index: 99999;
-        display: none; /* 默认隐藏 */
-        flex-direction: column; justify-content: center; align-items: center;
-        color: var(--gold); text-align: center;
-    }
-    #rotate-hint img { width: 80px; margin-bottom: 20px; animation: rotatePhone 2s infinite; }
-    @keyframes rotatePhone { 0%{transform:rotate(0deg);} 50%{transform:rotate(-90deg);} 100%{transform:rotate(0deg);} }
-
-    /* 如果屏幕是竖着的（高 > 宽），显示提示层 */
-    @media screen and (orientation: portrait) {
-        #rotate-hint { display: flex !important; }
-        #scale-wrapper { display: none !important; }
-    }
+    body { margin: 0; background: #000; overflow: hidden; font-family: 'Ma Shan Zheng', cursive; user-select: none; display: flex; justify-content: center; align-items: center; height: 100vh; color: #fff; }
+    #scale-wrapper { width: 1920px; height: 1080px; position: relative; flex-shrink: 0; transform-origin: center center; will-change: transform; }
+    #game-app { width: 100%; height: 100%; position: relative; background: #000; box-shadow: 0 0 100px #000; overflow: hidden; }
     
     .scene { position: absolute; top:0; left:0; width:100%; height:100%; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10; pointer-events: auto; }
     #scene-menu { background: url('bg_new.jpg') center center no-repeat; background-size: cover; justify-content: flex-start !important; padding-top: 80px; background-color: #000; }
@@ -635,27 +585,9 @@
     text-shadow: 0 1px 2px #000 !important;
     text-transform: uppercase;
 }
-/* 🔴 新增：修复奖励页面在手机上显示不全的问题 */
-/* 🔴 修复奖励页面布局 */
-#reward-grid { 
-    display: flex; 
-    justify-content: center; /* 左右居中 */
-    align-items: flex-start; /* 顶部对齐 */
-    gap: 40px; 
-    flex-wrap: wrap;         /* 允许换行 */
-    max-height: 80vh;        /* 限制最大高度 */
-    overflow-y: auto;        /* 内容太多时允许上下滚动 */
-    padding-bottom: 50px;
-    width: 100%; 
-    box-sizing: border-box;  /* 防止padding撑大容器 */
-}
 </style>
 </head>
 <body>
-<div id="rotate-hint">
-    <div style="font-size: 50px;">📱</div>
-    <h2 style="margin-top:20px;">为了最佳体验<br>请旋转手机至横屏</h2>
-</div>
 
 <div id="scale-wrapper">
     <div id="game-app">
@@ -847,12 +779,12 @@
 4.  **复制** 下面这个超长的代码块，粘贴进去：
 
 ```html
-<script>/* === 在 <script> 标签的 第一行 插入或替换这段代码 === */
+<script>function resize() {
+        const scale = Math.min(window.innerWidth/1920, window.innerHeight/1080);
+        document.getElementById('scale-wrapper').style.transform = `scale(${scale})`;
+    }
+    window.onresize = resize; setTimeout(resize, 100);
 
-<div id="rotate-hint">
-    <div style="font-size: 50px;">📱</div>
-    <h2 style="margin-top:20px;">为了最佳体验<br>请旋转手机至横屏</h2>
-</div>
 // ==========================================
 // 1. 角色数据 (已合并：特效版的数值/VFX + 剧情版的故事/羁绊)
 // ==========================================
@@ -872,16 +804,16 @@ const CARDS = [
         story: { 
             bio: "<b>【前尘】</b> 奴家幼时，以为修出九尾便是这世间最荣耀之事。为了化形，我吞噬同族，在雷劫中九死一生。<br><b>【今生】</b> 后来我在人间走了一遭，做过宠妃，当过祸水。最终发现人心比妖力更易操控。如今这青丘，不过是奴家看透红尘后的一个笼子罢。", 
             bg: "青丘之山，有兽焉，其状如狐而九尾。世人骂我妲己，骂我妖孽，却又在夜里偷偷求我赐予姻缘。呵，男人，真是虚伪的生物。", 
-            voice: { bio: "story_1_bio.mp3", bg: "story_1_bg.mp3" }, 
+            voice: { bio: "story_1_bio.wav", bg: "story_1_bg.wav" }, 
             impressions: {
-                2: { meet: "那天我正在梳妆，这呆子冲出来要啃我的胭脂，说是闻到了香甜味。", imp: "一个填不满的无底洞。只要给他吃的，让他咬谁他便咬谁，倒是一把好用的刀。", v_meet: "meet_1_to_2.mp3", v_imp: "imp_1_to_2.mp3" },
-                3: { meet: "战场上，他浑身是血地从尸堆里爬出来，眼神比野兽还凶。", imp: "毫无风情的疯狗。但他那股纯粹的杀意，在这个虚伪的世道里，反倒显得有些真实。", v_meet: "meet_1_to_3.mp3", v_imp: "imp_1_to_3.mp3" },
-                4: { meet: "我正因被世人误解而哭泣，这小家伙钻出来，用尾巴擦了我的泪。", imp: "软绵绵的小妹妹，是奴家唯一不忍心欺负的存在。", v_meet: "meet_1_to_4.mp3", v_imp: "imp_1_to_4.mp3" },
-                5: { meet: "她拿着毒果子骗我是驻颜丹。哼，这种小把戏，奴家五百年前就玩腻了。", imp: "阴险的小魔女。不过她的毒有时候比刀剑还好用，这种坏心眼，奴家倒是不讨厌。", v_meet: "meet_1_to_5.mp3", v_imp: "imp_1_to_5.mp3" },
-                6: { meet: "当年她引发的大水淹没了我的青丘洞府，弄湿了我最爱的云锦裳，为此我可是伤心了好久", imp: "水做的妹妹，太冷冰冰了。眼泪是女人最无用的武器，她什么时候才能明白？", v_meet: "meet_1_to_6.mp3", v_imp: "imp_1_to_6.mp3" },
-                7: { meet: "当年我还是小野狐时，险些被猎人剥皮，是这位“先生”路过救了我。", imp: "满口大道理的书呆子。虽然长得不错，可惜太正经了，一点都不好玩。", v_meet: "meet_1_to_7.mp3", v_imp: "imp_1_to_7.mp3" },
-                8: { meet: "在瘟疫中，我见她耗尽灵力救治那些曾经唾骂我们的凡人。", imp: "活得太久，却依然天真。她是个温柔的傻姐姐，但这世道，温柔往往是最致命的弱点。", v_meet: "meet_1_to_8.mp3", v_imp: "imp_1_to_8.mp3" },
-                9: { meet: "我想给天上的神寄一封情书，求了她三天三夜。", imp: "傲娇的小丫头。飞得那么快，也不知停下来看看沿途的风景。", v_meet: "meet_1_to_9.mp3", v_imp: "imp_1_to_9.mp3" }
+                2: { meet: "那天我正在梳妆，这呆子冲出来要啃我的胭脂，说是闻到了香甜味。", imp: "一个填不满的无底洞。只要给他吃的，让他咬谁他便咬谁，倒是一把好用的刀。", v_meet: "meet_1_to_2.wav", v_imp: "imp_1_to_2.wav" },
+                3: { meet: "战场上，他浑身是血地从尸堆里爬出来，眼神比野兽还凶。", imp: "毫无风情的疯狗。但他那股纯粹的杀意，在这个虚伪的世道里，反倒显得有些真实。", v_meet: "meet_1_to_3.wav", v_imp: "imp_1_to_3.wav" },
+                4: { meet: "我正因被世人误解而哭泣，这小家伙钻出来，用尾巴擦了我的泪。", imp: "软绵绵的小妹妹，是奴家唯一不忍心欺负的存在。", v_meet: "meet_1_to_4.wav", v_imp: "imp_1_to_4.wav" },
+                5: { meet: "她拿着毒果子骗我是驻颜丹。哼，这种小把戏，奴家五百年前就玩腻了。", imp: "阴险的小魔女。不过她的毒有时候比刀剑还好用，这种坏心眼，奴家倒是不讨厌。", v_meet: "meet_1_to_5.wav", v_imp: "imp_1_to_5.wav" },
+                6: { meet: "当年她引发的大水淹没了我的青丘洞府，弄湿了我最爱的云锦裳，为此我可是伤心了好久", imp: "水做的妹妹，太冷冰冰了。眼泪是女人最无用的武器，她什么时候才能明白？", v_meet: "meet_1_to_6.wav", v_imp: "imp_1_to_6.wav" },
+                7: { meet: "当年我还是小野狐时，险些被猎人剥皮，是这位“先生”路过救了我。", imp: "满口大道理的书呆子。虽然长得不错，可惜太正经了，一点都不好玩。", v_meet: "meet_1_to_7.wav", v_imp: "imp_1_to_7.wav" },
+                8: { meet: "在瘟疫中，我见她耗尽灵力救治那些曾经唾骂我们的凡人。", imp: "活得太久，却依然天真。她是个温柔的傻姐姐，但这世道，温柔往往是最致命的弱点。", v_meet: "meet_1_to_8.wav", v_imp: "imp_1_to_8.wav" },
+                9: { meet: "我想给天上的神寄一封情书，求了她三天三夜。", imp: "傲娇的小丫头。飞得那么快，也不知停下来看看沿途的风景。", v_meet: "meet_1_to_9.wav", v_imp: "imp_1_to_9.wav" }
             } 
         } 
     },
@@ -899,16 +831,16 @@ const CARDS = [
         story: { 
             bio: "<b>【饥荒】</b> 出生的时候，我太饿了，不小心吃掉了自己的蛋壳。一岁时，我吃掉了半座钩吾山的石头。但我还是饿...那种空虚感怎么填都填不满。<br><b>【领悟】</b> 后来我发现，情绪也是一道美味。恐惧是辣的，绝望是苦的。只要能填饱肚子，管他是人是神，我全都要吃掉！", 
             bg: "我是贪婪的化身，腋下长眼，虎齿人爪。你们把我的头纹刻在鼎上祈求富贵？讽刺的是，我只想要你们鼎里的肉！", 
-            voice: { bio: "story_2_bio.mp3", bg: "story_2_bg.mp3" }, 
+            voice: { bio: "story_2_bio.wav", bg: "story_2_bg.wav" }, 
             impressions: {
-                1: { meet: "她骗我说天上的月亮是最大的烧饼。我追了一整晚，只喝了西北风。", imp: "骗子！但是...她身上有股香香的味道，不知道咬一口是什么滋味。", v_meet: "meet_2_to_1.mp3", v_imp: "imp_2_to_1.mp3" },
-                3: { meet: "我们在抢同一个猎物。他要杀人，我要吃肉。最后我们达成协议：他负责杀，我负责吃。", imp: "最佳饭搭子。跟着他走，永远有热乎的血肉可以吃。", v_meet: "meet_2_to_3.mp3", v_imp: "imp_2_to_3.mp3" },
-                4: { meet: "我饿极了想吃她，她非但不跑，还跳到我鼻子上。", imp: "吃起来肯定是毛太多，肉太酸，塞牙缝都不够。留着当备用粮吧。", v_meet: "meet_2_to_4.mp3", v_imp: "imp_2_to_4.mp3" },
-                5: { meet: "偷吃了那丫头种的蘑菇，结果看见了好多小人，吐了三天。", imp: "她的肉肯定是苦的，有毒！那疯丫头太可怕了，离她远点。", v_meet: "meet_2_to_5.mp3", v_imp: "imp_2_to_5.mp3" },
-                6: { meet: "我以为她是条大鱼，扑通一声跳下水去抓。结果水太深，差点淹死。", imp: "虽然是鱼，但看起来冷冰冰的，不好吃。而且她救过我，这次就不吃她了。", v_meet: "meet_2_to_6.mp3", v_imp: "imp_2_to_6.mp3" },
-                7: { meet: "大家都怕我，只有这书生给我做了一碗红烧肉，还问我为什么饿。", imp: "虽然是个啰嗦的家伙。但他做的饭真好吃，如果他不讲大道理就更好了。", v_meet: "meet_2_to_7.mp3", v_imp: "imp_2_to_7.mp3" },
-                8: { meet: "我牙疼。那个女人摸了摸我的脸，牙就不疼了。", imp: "好人。但我梦游时好像啃了她一口，崩掉半颗牙...她的皮太硬了。", v_meet: "meet_2_to_8.mp3", v_imp: "imp_2_to_8.mp3" },
-                9: { meet: "我想抓她，她飞得太快，还在我头上拉了坨鸟屎...", imp: "吵死人的鸟！肉肯定又柴又硬。别让我抓到你！", v_meet: "meet_2_to_9.mp3", v_imp: "imp_2_to_9.mp3" }
+                1: { meet: "她骗我说天上的月亮是最大的烧饼。我追了一整晚，只喝了西北风。", imp: "骗子！但是...她身上有股香香的味道，不知道咬一口是什么滋味。", v_meet: "meet_2_to_1.wav", v_imp: "imp_2_to_1.wav" },
+                3: { meet: "我们在抢同一个猎物。他要杀人，我要吃肉。最后我们达成协议：他负责杀，我负责吃。", imp: "最佳饭搭子。跟着他走，永远有热乎的血肉可以吃。", v_meet: "meet_2_to_3.wav", v_imp: "imp_2_to_3.wav" },
+                4: { meet: "我饿极了想吃她，她非但不跑，还跳到我鼻子上。", imp: "吃起来肯定是毛太多，肉太酸，塞牙缝都不够。留着当备用粮吧。", v_meet: "meet_2_to_4.wav", v_imp: "imp_2_to_4.wav" },
+                5: { meet: "偷吃了那丫头种的蘑菇，结果看见了好多小人，吐了三天。", imp: "她的肉肯定是苦的，有毒！那疯丫头太可怕了，离她远点。", v_meet: "meet_2_to_5.wav", v_imp: "imp_2_to_5.wav" },
+                6: { meet: "我以为她是条大鱼，扑通一声跳下水去抓。结果水太深，差点淹死。", imp: "虽然是鱼，但看起来冷冰冰的，不好吃。而且她救过我，这次就不吃她了。", v_meet: "meet_2_to_6.wav", v_imp: "imp_2_to_6.wav" },
+                7: { meet: "大家都怕我，只有这书生给我做了一碗红烧肉，还问我为什么饿。", imp: "虽然是个啰嗦的家伙。但他做的饭真好吃，如果他不讲大道理就更好了。", v_meet: "meet_2_to_7.wav", v_imp: "imp_2_to_7.wav" },
+                8: { meet: "我牙疼。那个女人摸了摸我的脸，牙就不疼了。", imp: "好人。但我梦游时好像啃了她一口，崩掉半颗牙...她的皮太硬了。", v_meet: "meet_2_to_8.wav", v_imp: "imp_2_to_8.wav" },
+                9: { meet: "我想抓她，她飞得太快，还在我头上拉了坨鸟屎...", imp: "吵死人的鸟！肉肯定又柴又硬。别让我抓到你！", v_meet: "meet_2_to_9.wav", v_imp: "imp_2_to_9.wav" }
             } 
         } 
     },
@@ -926,16 +858,16 @@ const CARDS = [
         story: { 
             bio: "<b>【信条】</b> 我最讨厌那些满口仁义道德的伪君子。看见有人打架，我就要去咬死那个占理的；看见有人诚实，我就要去吃掉他的鼻子！<br><b>【本心】</b> 为什么？因为只有混乱和暴力，才是最真实的。在这个弱肉强食的世界，我只是撕开了那层虚伪的面纱！", 
             bg: "我是少昊氏的不肖子，专爱惩善扬恶。人们恨我入骨，却不知他们心中的恶意，正是我力量的源泉。", 
-            voice: { bio: "story_3_bio.mp3", bg: "story_3_bg.mp3" }, 
+            voice: { bio: "story_3_bio.wav", bg: "story_3_bg.wav" }, 
             impressions: {
-                1: { meet: "战场上，她在那搔首弄姿，乱我军心。", imp: "狡猾的狐狸。她作恶是为了生存，我是为了乐趣。道不同，不相为谋。", v_meet: "meet_3_to_1.mp3", v_imp: "imp_3_to_1.mp3" },
-                2: { meet: "我杀完人正要走，这货冲出来把尸体全吃了，还问我还有没有。", imp: "没脑子的饭桶。只要给他肉，让他杀谁都行。很好用的工具。", v_meet: "meet_3_to_2.mp3", v_imp: "imp_3_to_2.mp3" },
-                4: { meet: "我杀红了眼，正处于狂暴边缘，这小东西不知死活地靠过来。", imp: "这种软弱的生物，居然还能活到现在？但在她身边，我的狂怒竟然平息了。", v_meet: "meet_3_to_4.mp3", v_imp: "imp_3_to_4.mp3" },
-                5: { meet: "她在水源下毒，毒死了一座城的人。我找到她，不仅没杀她，还和她喝了一顿酒。", imp: "阴险的女人，但我喜欢。暴力不仅是拳头，毒也是一种艺术。", v_meet: "meet_3_to_5.mp3", v_imp: "imp_3_to_5.mp3" },
-                6: { meet: "洪水滔天时，我在山顶狂笑，她在水底哭泣。", imp: "灾星。她带来的毁灭比我壮观多了，可她偏偏一副受害者的模样，看着就来气。", v_meet: "meet_3_to_6.mp3", v_imp: "imp_3_to_6.mp3" },
-                7: { meet: "白泽...我的一生之敌！第一次见面他就用那破书指点我，说我有'心魔'。", imp: "满嘴大道理的伪君子。总有一天我要撕烂他的书，拔光他的毛！", v_meet: "meet_3_to_7.mp3", v_imp: "imp_3_to_7.mp3" },
-                8: { meet: "我把人打个半死，那个女人就去救活；我再打，她再救。", imp: "多管闲事的女人。但她治伤确实有一手，留着她，我也能多打几场架。", v_meet: "meet_3_to_8.mp3", v_imp: "imp_3_to_8.mp3" },
-                9: { meet: "她送来一封休战书。我当场撕了信，顺便拔了她一根毛。", imp: "跑腿的。送信这种无聊的事，只有弱者才做。", v_meet: "meet_3_to_9.mp3", v_imp: "imp_3_to_9.mp3" }
+                1: { meet: "战场上，她在那搔首弄姿，乱我军心。", imp: "狡猾的狐狸。她作恶是为了生存，我是为了乐趣。道不同，不相为谋。", v_meet: "meet_3_to_1.wav", v_imp: "imp_3_to_1.wav" },
+                2: { meet: "我杀完人正要走，这货冲出来把尸体全吃了，还问我还有没有。", imp: "没脑子的饭桶。只要给他肉，让他杀谁都行。很好用的工具。", v_meet: "meet_3_to_2.wav", v_imp: "imp_3_to_2.wav" },
+                4: { meet: "我杀红了眼，正处于狂暴边缘，这小东西不知死活地靠过来。", imp: "这种软弱的生物，居然还能活到现在？但在她身边，我的狂怒竟然平息了。", v_meet: "meet_3_to_4.wav", v_imp: "imp_3_to_4.wav" },
+                5: { meet: "她在水源下毒，毒死了一座城的人。我找到她，不仅没杀她，还和她喝了一顿酒。", imp: "阴险的女人，但我喜欢。暴力不仅是拳头，毒也是一种艺术。", v_meet: "meet_3_to_5.wav", v_imp: "imp_3_to_5.wav" },
+                6: { meet: "洪水滔天时，我在山顶狂笑，她在水底哭泣。", imp: "灾星。她带来的毁灭比我壮观多了，可她偏偏一副受害者的模样，看着就来气。", v_meet: "meet_3_to_6.wav", v_imp: "imp_3_to_6.wav" },
+                7: { meet: "白泽...我的一生之敌！第一次见面他就用那破书指点我，说我有'心魔'。", imp: "满嘴大道理的伪君子。总有一天我要撕烂他的书，拔光他的毛！", v_meet: "meet_3_to_7.wav", v_imp: "imp_3_to_7.wav" },
+                8: { meet: "我把人打个半死，那个女人就去救活；我再打，她再救。", imp: "多管闲事的女人。但她治伤确实有一手，留着她，我也能多打几场架。", v_meet: "meet_3_to_8.wav", v_imp: "imp_3_to_8.wav" },
+                9: { meet: "她送来一封休战书。我当场撕了信，顺便拔了她一根毛。", imp: "跑腿的。送信这种无聊的事，只有弱者才做。", v_meet: "meet_3_to_9.wav", v_imp: "imp_3_to_9.wav" }
             } 
         } 
     },
@@ -953,16 +885,16 @@ const CARDS = [
         story: { 
             bio: "<b>【身世】</b> 我住在霍山，大家都说我是像猫一样的小可爱。只要养着我，就不会感到悲伤。<br><b>【秘密】</b> 其实...吃掉太多的噩梦和悲伤，我的肚子也会痛的。但只要看到大家露出笑容，我就觉得一切都值得啦！快来抱抱我，我很暖和哦。", 
             bg: "霍山有兽焉，其状如狸，而白尾，名曰朏朏，养之可以已忧。世人皆苦，唯有自渡。而我，愿做那渡人的舟。", 
-            voice: { bio: "story_4_bio.mp3", bg: "story_4_bg.mp3" }, 
+            voice: { bio: "story_4_bio.wav", bg: "story_4_bg.wav" }, 
             impressions: {
-                1: { meet: "我在树林里迷路了，是漂亮姐姐带我走出来的。", imp: "刀子嘴豆腐心的姐姐。她心里藏着很多不开心的事，我想帮她吃掉。", v_meet: "meet_4_to_1.mp3", v_imp: "imp_4_to_1.mp3" },
-                2: { meet: "他肚子饿的时候最暴躁，我就唱歌哄他睡。他睡着时呼噜声震天响。", imp: "他其实很简单，只要吃饱了就很乖。我会努力不被他吃掉的！", v_meet: "meet_4_to_2.mp3", v_imp: "imp_4_to_2.mp3" },
-                3: { meet: "他浑身是伤地躺在路边，我偷偷给他盖了片叶子。", imp: "那个凶凶的大哥哥，其实很孤独吧？他的梦里全是血和火，一定很痛。", v_meet: "meet_4_to_3.mp3", v_imp: "imp_4_to_3.mp3" },
-                5: { meet: "她给了我一颗糖，结果我吃了之后一直打嗝，打出来的气是紫色的！", imp: "坏心眼的姐姐，总是想作弄我。但我百毒不侵，略略略！", v_meet: "meet_4_to_5.mp3", v_imp: "imp_4_to_5.mp3" },
-                6: { meet: "我在河边玩，她突然浮出水面，悲伤地看着我。", imp: "鱼姐姐太悲伤了，她的眼泪变成了洪水。她的悲伤太咸了，我一个人吃不完。", v_meet: "meet_4_to_6.mp3", v_imp: "imp_4_to_6.mp3" },
-                7: { meet: "我还是个小毛球的时候，白泽先生就抱过我。", imp: "先生什么都懂，但我不想吃掉他的烦恼，因为那些烦恼太沉重了。", v_meet: "meet_4_to_7.mp3", v_imp: "imp_4_to_7.mp3" },
-                8: { meet: "我们一起去过白民国。我们坐在屋顶上叹了一整晚的气。", imp: "乘黄姐姐很温柔，怀抱很暖和，像妈妈一样。", v_meet: "meet_4_to_8.mp3", v_imp: "imp_4_to_8.mp3" },
-                9: { meet: "她飞得太急撞到了树上，是我帮她揉的脑袋。", imp: "青鸟姐姐总是很忙。飞来飞去不累吗？她每次回来，都会讲云上面的故事给我听。", v_meet: "meet_4_to_9.mp3", v_imp: "imp_4_to_9.mp3" }
+                1: { meet: "我在树林里迷路了，是漂亮姐姐带我走出来的。", imp: "刀子嘴豆腐心的姐姐。她心里藏着很多不开心的事，我想帮她吃掉。", v_meet: "meet_4_to_1.wav", v_imp: "imp_4_to_1.wav" },
+                2: { meet: "他肚子饿的时候最暴躁，我就唱歌哄他睡。他睡着时呼噜声震天响。", imp: "他其实很简单，只要吃饱了就很乖。我会努力不被他吃掉的！", v_meet: "meet_4_to_2.wav", v_imp: "imp_4_to_2.wav" },
+                3: { meet: "他浑身是伤地躺在路边，我偷偷给他盖了片叶子。", imp: "那个凶凶的大哥哥，其实很孤独吧？他的梦里全是血和火，一定很痛。", v_meet: "meet_4_to_3.wav", v_imp: "imp_4_to_3.wav" },
+                5: { meet: "她给了我一颗糖，结果我吃了之后一直打嗝，打出来的气是紫色的！", imp: "坏心眼的姐姐，总是想作弄我。但我百毒不侵，略略略！", v_meet: "meet_4_to_5.wav", v_imp: "imp_4_to_5.wav" },
+                6: { meet: "我在河边玩，她突然浮出水面，悲伤地看着我。", imp: "鱼姐姐太悲伤了，她的眼泪变成了洪水。她的悲伤太咸了，我一个人吃不完。", v_meet: "meet_4_to_6.wav", v_imp: "imp_4_to_6.wav" },
+                7: { meet: "我还是个小毛球的时候，白泽先生就抱过我。", imp: "先生什么都懂，但我不想吃掉他的烦恼，因为那些烦恼太沉重了。", v_meet: "meet_4_to_7.wav", v_imp: "imp_4_to_7.wav" },
+                8: { meet: "我们一起去过白民国。我们坐在屋顶上叹了一整晚的气。", imp: "乘黄姐姐很温柔，怀抱很暖和，像妈妈一样。", v_meet: "meet_4_to_8.wav", v_imp: "imp_4_to_8.wav" },
+                9: { meet: "她飞得太急撞到了树上，是我帮她揉的脑袋。", imp: "青鸟姐姐总是很忙。飞来飞去不累吗？她每次回来，都会讲云上面的故事给我听。", v_meet: "meet_4_to_9.wav", v_imp: "imp_4_to_9.wav" }
             } 
         } 
     },
@@ -980,16 +912,16 @@ const CARDS = [
         story: { 
             bio: "<b>【天赋】</b> 别看本小姐个子小，我可是百毒不侵的！那些想吃我的家伙，最后都捂着肚子倒下了。<br><b>【恶作剧】</b> 我尝遍了天下的毒草，发现毒和药其实是一回事。你也想尝尝这个紫色的蘑菇吗？很甜的哦~嘻嘻，骗你的，吃了会跳三天的舞停不下来！", 
             bg: "丹熏之山，有兽焉，其状如鼠，而兔首麋身，以其尾飞。我是天生的药罐子，也是天生的毒物。小个子也有大智慧（和坏心眼）。", 
-            voice: { bio: "story_5_bio.mp3", bg: "story_5_bg.mp3" }, 
+            voice: { bio: "story_5_bio.wav", bg: "story_5_bg.wav" }, 
             impressions: {
-                1: { meet: "趁她睡觉，我在她的胭脂里加了痒痒粉。看她当众抓痒，笑死我了！", imp: "狐狸精姐姐懂什么药理？就会用魅术。不过她要是肯试药，本小姐可以考虑少收点费。", v_meet: "meet_5_to_1.mp3", v_imp: "imp_5_to_1.mp3" },
-                2: { meet: "这家伙简直是神农再世，吃什么都不死。我喂他断肠草，他当韭菜吃。", imp: "完美的试药对象！只有这个笨哥哥敢吃我的失败品。作为回报，我帮他治好了消化不良。", v_meet: "meet_5_to_2.mp3", v_imp: "imp_5_to_2.mp3" },
-                3: { meet: "我们交流过杀人的艺术。我主张无声无息，他主张血肉横飞。", imp: "粗鲁的野蛮人。他受伤了从不敷药，只知道舔。真是不卫生。", v_meet: "meet_5_to_3.mp3", v_imp: "imp_5_to_3.mp3" },
-                4: { meet: "我想用笑气让他笑死，结果他居然睡着了...", imp: "小傻瓜。既然毒不死，那就留着当宠物吧。心情不好的时候捏捏她也不错。", v_meet: "meet_5_to_4.mp3", v_imp: "imp_5_to_4.mp3" },
-                6: { meet: "她的水漫灌了我的草药田！我辛苦种的断肠草啊！全泡汤了！", imp: "那个哭哭啼啼的女人。我往她的水里倒了解毒剂，想把她的鱼虾都毒死（反向操作），结果被她卷进漩涡洗了个澡。", v_meet: "meet_5_to_6.mp3", v_imp: "imp_5_to_6.mp3" },
-                7: { meet: "只有那个书生能认出我所有的草药。我偷了他一根头发做实验，被他发现了。", imp: "值得尊敬的对手。虽然他总是说教，但他的知识确实渊博。下次偷两根头发。", v_meet: "meet_5_to_7.mp3", v_imp: "imp_5_to_7.mp3" },
-                8: { meet: "那个姐姐想教我医术救人，我想教她毒术杀人。", imp: "假正经。长寿有什么用？如果活得痛苦，不如喝下本小姐这瓶毒药来得痛快。", v_meet: "meet_5_to_8.mp3", v_imp: "imp_5_to_8.mp3" },
-                9: { meet: "想抓她来试飞行药剂，结果被她带到天上扔了下来。", imp: "飞得快了不起啊？等我研制出“禁空散”，看你掉不掉下来！", v_meet: "meet_5_to_9.mp3", v_imp: "imp_5_to_9.mp3" }
+                1: { meet: "趁她睡觉，我在她的胭脂里加了痒痒粉。看她当众抓痒，笑死我了！", imp: "狐狸精姐姐懂什么药理？就会用魅术。不过她要是肯试药，本小姐可以考虑少收点费。", v_meet: "meet_5_to_1.wav", v_imp: "imp_5_to_1.wav" },
+                2: { meet: "这家伙简直是神农再世，吃什么都不死。我喂他断肠草，他当韭菜吃。", imp: "完美的试药对象！只有这个笨哥哥敢吃我的失败品。作为回报，我帮他治好了消化不良。", v_meet: "meet_5_to_2.wav", v_imp: "imp_5_to_2.wav" },
+                3: { meet: "我们交流过杀人的艺术。我主张无声无息，他主张血肉横飞。", imp: "粗鲁的野蛮人。他受伤了从不敷药，只知道舔。真是不卫生。", v_meet: "meet_5_to_3.wav", v_imp: "imp_5_to_3.wav" },
+                4: { meet: "我想用笑气让他笑死，结果他居然睡着了...", imp: "小傻瓜。既然毒不死，那就留着当宠物吧。心情不好的时候捏捏她也不错。", v_meet: "meet_5_to_4.wav", v_imp: "imp_5_to_4.wav" },
+                6: { meet: "她的水漫灌了我的草药田！我辛苦种的断肠草啊！全泡汤了！", imp: "那个哭哭啼啼的女人。我往她的水里倒了解毒剂，想把她的鱼虾都毒死（反向操作），结果被她卷进漩涡洗了个澡。", v_meet: "meet_5_to_6.wav", v_imp: "imp_5_to_6.wav" },
+                7: { meet: "只有那个书生能认出我所有的草药。我偷了他一根头发做实验，被他发现了。", imp: "值得尊敬的对手。虽然他总是说教，但他的知识确实渊博。下次偷两根头发。", v_meet: "meet_5_to_7.wav", v_imp: "imp_5_to_7.wav" },
+                8: { meet: "那个姐姐想教我医术救人，我想教她毒术杀人。", imp: "假正经。长寿有什么用？如果活得痛苦，不如喝下本小姐这瓶毒药来得痛快。", v_meet: "meet_5_to_8.wav", v_imp: "imp_5_to_8.wav" },
+                9: { meet: "想抓她来试飞行药剂，结果被她带到天上扔了下来。", imp: "飞得快了不起啊？等我研制出“禁空散”，看你掉不掉下来！", v_meet: "meet_5_to_9.wav", v_imp: "imp_5_to_9.wav" }
             } 
         } 
     },
@@ -1007,16 +939,16 @@ const CARDS = [
         story: { 
             bio: "<b>【悲歌】</b> 我有着鸟的翅膀，却只能活在水里；我有着鱼的身体，却渴望飞向天空。凡人叫我灾星，因为我出现的地方，必有大水。<br><b>【心愿】</b> 其实，我只是想飞出水面，看看岸上的人。可我每一次挥动翅膀，都会掀起滔天巨浪，淹没我想要亲近的一切。我是被诅咒的少女。", 
             bg: "邽山，蒙水出焉。其中多蠃鱼，鱼身而鸟翼，音如鸳鸯。我的叫声像鸳鸯一样动听，却无人敢听，因为那意味着毁灭。", 
-            voice: { bio: "story_6_bio.mp3", bg: "story_6_bg.mp3" }, 
+            voice: { bio: "story_6_bio.wav", bg: "story_6_bg.wav" }, 
             impressions: {
-                1: { meet: "她曾在水边梳洗，那么美，那么耀眼。我看呆了，忘了控制水流，结果把她淋成了落汤鸡。", imp: "她的火，温暖而危险。我羡慕她的自信，那是生活在阳光下的人才有的光芒。", v_meet: "meet_6_to_1.mp3", v_imp: "imp_6_to_1.mp3" },
-                2: { meet: "他张大嘴来喝水，差点把我的家喝干了！我吓坏了，召唤漩涡把他卷了进去。", imp: "粗鲁的胖子。但他真的很单纯。只要给他鱼吃，他就会冲我笑。", v_meet: "meet_6_to_2.mp3", v_imp: "imp_6_to_2.mp3" },
-                3: { meet: "他是我的同乡。但他太吵闹了，整天喊打喊杀，破坏了水的宁静。", imp: "他杀人，我冲刷尸体。我们就像是毁灭的上下游。虽然不喜欢他，但在这个陌生的队伍里，他让我感到一丝熟悉。", v_meet: "meet_6_to_3.mp3", v_imp: "imp_6_to_3.mp3" },
-                4: { meet: "洪水过后，只有她坐在树梢上，陪我看被淹没的世界。", imp: "唯一不讨厌我带来洪水的人。在她身边，我觉得自己不是灾星，只是一条普通的鱼。", v_meet: "meet_6_to_4.mp3", v_imp: "imp_6_to_4.mp3" },
-                5: { meet: "她的药渣污染了水源，害得我的一家小鱼都生病了。", imp: "乱扔垃圾的小老鼠！虽然她后来送了解药，但我还是不想理她。", v_meet: "meet_6_to_5.mp3", v_imp: "imp_6_to_5.mp3" },
-                7: { meet: "他知道我是蠃鱼，也知道如何治水。但他没有杀我，只是叹了口气，指引我去了大海。", imp: "像父亲一样威严而慈悲的长者。是他告诉我，只要心存善念，灾星也能变成守护神。", v_meet: "meet_6_to_7.mp3", v_imp: "imp_6_to_7.mp3" },
-                8: { meet: "洪水泛滥时，她背着凡人渡河，一次又一次。我看着她，默默平息了风浪。", imp: "她的生命力太旺盛，水淹不死她。她是这世间温柔的堤坝，阻挡着我的悲伤蔓延。", v_meet: "meet_6_to_8.mp3", v_imp: "imp_6_to_8.mp3" },
-                9: { meet: "我在水底游，她在天上飞。我们隔着水面相望，那是两个永远无法触碰的世界。", imp: "我羡慕她的翅膀，可以自由飞翔。而我，只能带着这双无用的翅膀沉入深渊。", v_meet: "meet_6_to_9.mp3", v_imp: "imp_6_to_9.mp3" }
+                1: { meet: "她曾在水边梳洗，那么美，那么耀眼。我看呆了，忘了控制水流，结果把她淋成了落汤鸡。", imp: "她的火，温暖而危险。我羡慕她的自信，那是生活在阳光下的人才有的光芒。", v_meet: "meet_6_to_1.wav", v_imp: "imp_6_to_1.wav" },
+                2: { meet: "他张大嘴来喝水，差点把我的家喝干了！我吓坏了，召唤漩涡把他卷了进去。", imp: "粗鲁的胖子。但他真的很单纯。只要给他鱼吃，他就会冲我笑。", v_meet: "meet_6_to_2.wav", v_imp: "imp_6_to_2.wav" },
+                3: { meet: "他是我的同乡。但他太吵闹了，整天喊打喊杀，破坏了水的宁静。", imp: "他杀人，我冲刷尸体。我们就像是毁灭的上下游。虽然不喜欢他，但在这个陌生的队伍里，他让我感到一丝熟悉。", v_meet: "meet_6_to_3.wav", v_imp: "imp_6_to_3.wav" },
+                4: { meet: "洪水过后，只有她坐在树梢上，陪我看被淹没的世界。", imp: "唯一不讨厌我带来洪水的人。在她身边，我觉得自己不是灾星，只是一条普通的鱼。", v_meet: "meet_6_to_4.wav", v_imp: "imp_6_to_4.wav" },
+                5: { meet: "她的药渣污染了水源，害得我的一家小鱼都生病了。", imp: "乱扔垃圾的小老鼠！虽然她后来送了解药，但我还是不想理她。", v_meet: "meet_6_to_5.wav", v_imp: "imp_6_to_5.wav" },
+                7: { meet: "他知道我是蠃鱼，也知道如何治水。但他没有杀我，只是叹了口气，指引我去了大海。", imp: "像父亲一样威严而慈悲的长者。是他告诉我，只要心存善念，灾星也能变成守护神。", v_meet: "meet_6_to_7.wav", v_imp: "imp_6_to_7.wav" },
+                8: { meet: "洪水泛滥时，她背着凡人渡河，一次又一次。我看着她，默默平息了风浪。", imp: "她的生命力太旺盛，水淹不死她。她是这世间温柔的堤坝，阻挡着我的悲伤蔓延。", v_meet: "meet_6_to_8.wav", v_imp: "imp_6_to_8.wav" },
+                9: { meet: "我在水底游，她在天上飞。我们隔着水面相望，那是两个永远无法触碰的世界。", imp: "我羡慕她的翅膀，可以自由飞翔。而我，只能带着这双无用的翅膀沉入深渊。", v_meet: "meet_6_to_9.wav", v_imp: "imp_6_to_9.wav" }
             } 
         } 
     },
@@ -1034,16 +966,16 @@ const CARDS = [
         story: { 
             bio: "<b>【通晓】</b> 通万物之情，晓天下鬼神。在下白泽，活得太久，见得太多。当年黄帝巡狩，我献上《白泽图》，道尽了天下妖鬼的弱点。<br><b>【代价】</b> 妖族视我为叛徒，人族视我为工具。知晓一切是一种诅咒，但我愿用这份诅咒，为苍生撑起一片最后的庇护之地。", 
             bg: "东海之滨，黄帝巡狩，得白泽神兽，能言，达于万物之情。我是智慧的象征，也是孤独的守望者。", 
-            voice: { bio: "story_7_bio.mp3", bg: "story_7_bg.mp3" }, 
+            voice: { bio: "story_7_bio.wav", bg: "story_7_bg.wav" }, 
             impressions: {
-                1: { meet: "当年她还是一只瑟瑟发抖的小野狐时，险些被天雷劈死，我曾出手救过她。", imp: "心机太深，但她也有她的苦衷。她眼底的凄凉，在下看在眼里。只要她不做得太绝，在下便装作不知吧。", v_meet: "meet_7_to_1.mp3", v_imp: "imp_7_to_1.mp3" },
-                2: { meet: "我曾试图用知识填满他的胃，给他讲了三天三夜的道。结果他睡着了。", imp: "欲壑难填。他是众生贪念的集合体。虽然愚钝，但这份单纯的执着，倒也难得。", v_meet: "meet_7_to_2.mp3", v_imp: "imp_7_to_2.mp3" },
-                3: { meet: "他第一次见我就想咬我，因为我身上有“秩序”的味道。", imp: "冥顽不灵的孽障。他信奉混乱，我维护秩序。我们注定无法共存。但我有时也羡慕他的纯粹，活得无拘无束。", v_meet: "meet_7_to_3.mp3", v_imp: "imp_7_to_3.mp3" },
-                4: { meet: "乱世之中，我发现这孩子在废墟上唱歌，周围的怨灵竟然都散去了。", imp: "我把她记在《白泽图》的第一页，标注为“不可伤害”。她是这残酷世界里唯一的慰藉，愿世界对她温柔以待。", v_meet: "meet_7_to_4.mp3", v_imp: "imp_7_to_4.mp3" },
-                5: { meet: "她来偷我的医书，被我当场抓获。我没有罚她，反而教了她几味药理。", imp: "小聪明。用药理去害人，终究是落了下乘。希望能有人引那丫头走上正途。", v_meet: "meet_7_to_5.mp3", v_imp: "imp_7_to_5.mp3" },
-                6: { meet: "她因为控制不住洪水而想要自杀。我拦住了她。", imp: "也是个可怜人，被天性所困。她本性善良，只是背负了太沉重的宿命。我愿为她指引方向。", v_meet: "meet_7_to_6.mp3", v_imp: "imp_7_to_6.mp3" },
-                8: { meet: "我们在东海边相遇，对坐了三天三夜，一句话没说，却仿佛说尽了沧桑。", imp: "乘黄女士，你也累了吧？我们都背负着太沉重的东西——我是知识，她是寿命。只有和她对饮时，我才能真正放松。", v_meet: "meet_7_to_8.mp3", v_imp: "imp_7_to_8.mp3" },
-                9: { meet: "西王母派她来给我送信，她叽叽喳喳地讲了一路的见闻，吵得我头疼。", imp: "活泼的小丫头。她总是带来最新的八卦消息，是我了解这个世界变化的唯一窗口。", v_meet: "meet_7_to_9.mp3", v_imp: "imp_7_to_9.mp3" }
+                1: { meet: "当年她还是一只瑟瑟发抖的小野狐时，险些被天雷劈死，我曾出手救过她。", imp: "心机太深，但她也有她的苦衷。她眼底的凄凉，在下看在眼里。只要她不做得太绝，在下便装作不知吧。", v_meet: "meet_7_to_1.wav", v_imp: "imp_7_to_1.wav" },
+                2: { meet: "我曾试图用知识填满他的胃，给他讲了三天三夜的道。结果他睡着了。", imp: "欲壑难填。他是众生贪念的集合体。虽然愚钝，但这份单纯的执着，倒也难得。", v_meet: "meet_7_to_2.wav", v_imp: "imp_7_to_2.wav" },
+                3: { meet: "他第一次见我就想咬我，因为我身上有“秩序”的味道。", imp: "冥顽不灵的孽障。他信奉混乱，我维护秩序。我们注定无法共存。但我有时也羡慕他的纯粹，活得无拘无束。", v_meet: "meet_7_to_3.wav", v_imp: "imp_7_to_3.wav" },
+                4: { meet: "乱世之中，我发现这孩子在废墟上唱歌，周围的怨灵竟然都散去了。", imp: "我把她记在《白泽图》的第一页，标注为“不可伤害”。她是这残酷世界里唯一的慰藉，愿世界对她温柔以待。", v_meet: "meet_7_to_4.wav", v_imp: "imp_7_to_4.wav" },
+                5: { meet: "她来偷我的医书，被我当场抓获。我没有罚她，反而教了她几味药理。", imp: "小聪明。用药理去害人，终究是落了下乘。希望能有人引那丫头走上正途。", v_meet: "meet_7_to_5.wav", v_imp: "imp_7_to_5.wav" },
+                6: { meet: "她因为控制不住洪水而想要自杀。我拦住了她。", imp: "也是个可怜人，被天性所困。她本性善良，只是背负了太沉重的宿命。我愿为她指引方向。", v_meet: "meet_7_to_6.wav", v_imp: "imp_7_to_6.wav" },
+                8: { meet: "我们在东海边相遇，对坐了三天三夜，一句话没说，却仿佛说尽了沧桑。", imp: "乘黄女士，你也累了吧？我们都背负着太沉重的东西——我是知识，她是寿命。只有和她对饮时，我才能真正放松。", v_meet: "meet_7_to_8.wav", v_imp: "imp_7_to_8.wav" },
+                9: { meet: "西王母派她来给我送信，她叽叽喳喳地讲了一路的见闻，吵得我头疼。", imp: "活泼的小丫头。她总是带来最新的八卦消息，是我了解这个世界变化的唯一窗口。", v_meet: "meet_7_to_9.wav", v_imp: "imp_7_to_9.wav" }
             } 
         } 
     },
@@ -1061,16 +993,16 @@ const CARDS = [
         story: { 
             bio: "<b>【诅咒】</b> 骑上我的人，可活两千岁。凡人为了这份寿命，不惜互相残杀，甚至把刀架在我的脖子上。我的血，成了他们眼中的长生药。<br><b>【觉悟】</b> 我看尽了人性的丑恶，也见过了生离死别。我终于明白，生命的意义不在长度，而在厚度。现在，我不再是逃跑的猎物，我要用我的角，去治愈那些真正值得救的人。", 
             bg: "白民之国，有乘黄，其状如狐，其背上有角，乘之寿二千岁。长生是世人的梦想，却是我背负的枷锁。", 
-            voice: { bio: "story_8_bio.mp3", bg: "story_8_bg.mp3" }, 
+            voice: { bio: "story_8_bio.wav", bg: "story_8_bg.wav" }, 
             impressions: {
-                1: { meet: "她曾想魅惑我，让我带她长生。我看着她的眼睛说：“长生很苦的，你受得了吗？”", imp: "她的美貌能维持千年，但她的心已经千疮百孔了。我曾想治愈她的心病，但她拒绝了。她说没有了痛，就忘了自己是谁。", v_meet: "meet_8_to_1.mp3", v_imp: "imp_8_to_1.mp3" },
-                2: { meet: "他想吃我，不是为了长生，只是因为饿。我给了他很多食物，告诉他“活着不是为了吃”。", imp: "单纯的傻大个。有时候我也想像他一样，只为了填饱肚子而活，没有那么多烦恼。", v_meet: "meet_8_to_2.mp3", v_imp: "imp_8_to_2.mp3" },
-                3: { meet: "他造成的伤口很难愈合，那是带着诅咒的伤。我必须花费双倍的灵力去治愈。", imp: "制造伤痛的恶徒。但他也是一种“必要之恶”吧？没有他的破坏，世人怎知生命的珍贵？", v_meet: "meet_8_to_3.mp3", v_imp: "imp_8_to_3.mp3" },
-                4: { meet: "只要她在，我就不需要施展治疗术。快乐是最好的药。", imp: "多么纯净的灵魂，希望岁月不要磨平了她的棱角。如果可以，我想护她周全。", v_meet: "meet_8_to_4.mp3", v_imp: "imp_8_to_4.mp3" },
-                5: { meet: "我们曾整夜探讨草药。虽然她研究的是怎么毒死人，我研究的是怎么救人。", imp: "用毒之人，亦懂医理。只要那个小妹妹不用毒害人，我们还可以是朋友。", v_meet: "meet_8_to_5.mp3", v_imp: "imp_8_to_5.mp3" },
-                6: { meet: "洪水过后，必有瘟疫。那是我最忙的时候。我看到她在角落里哭泣，便走过去给了她一颗能安神的草药。", imp: "我不怪她，灾难也是自然循环的一部分。她负责破坏，我负责修补。这是我们的宿命。", v_meet: "meet_8_to_6.mp3", v_imp: "imp_8_to_6.mp3" },
-                7: { meet: "白泽先生，我们是同类。我们经常一起下棋。他通晓未来，我不求长生，只争棋盘上的一时胜负。", imp: "唯一的知己。在这个疯狂的世界里，只有和他在一起，我才能感到片刻的安宁。", v_meet: "meet_8_to_7.mp3", v_imp: "imp_8_to_7.mp3" },
-                9: { meet: "她受伤时从不喊疼，只怕飞不起来。我治好了她的翅膀，她送了我一片最蓝的羽毛。", imp: "充满活力的生命，看着她，我就觉得自己年轻了。希望她能永远自由地飞翔。", v_meet: "meet_8_to_9.mp3", v_imp: "imp_8_to_9.mp3" }
+                1: { meet: "她曾想魅惑我，让我带她长生。我看着她的眼睛说：“长生很苦的，你受得了吗？”", imp: "她的美貌能维持千年，但她的心已经千疮百孔了。我曾想治愈她的心病，但她拒绝了。她说没有了痛，就忘了自己是谁。", v_meet: "meet_8_to_1.wav", v_imp: "imp_8_to_1.wav" },
+                2: { meet: "他想吃我，不是为了长生，只是因为饿。我给了他很多食物，告诉他“活着不是为了吃”。", imp: "单纯的傻大个。有时候我也想像他一样，只为了填饱肚子而活，没有那么多烦恼。", v_meet: "meet_8_to_2.wav", v_imp: "imp_8_to_2.wav" },
+                3: { meet: "他造成的伤口很难愈合，那是带着诅咒的伤。我必须花费双倍的灵力去治愈。", imp: "制造伤痛的恶徒。但他也是一种“必要之恶”吧？没有他的破坏，世人怎知生命的珍贵？", v_meet: "meet_8_to_3.wav", v_imp: "imp_8_to_3.wav" },
+                4: { meet: "只要她在，我就不需要施展治疗术。快乐是最好的药。", imp: "多么纯净的灵魂，希望岁月不要磨平了她的棱角。如果可以，我想护她周全。", v_meet: "meet_8_to_4.wav", v_imp: "imp_8_to_4.wav" },
+                5: { meet: "我们曾整夜探讨草药。虽然她研究的是怎么毒死人，我研究的是怎么救人。", imp: "用毒之人，亦懂医理。只要那个小妹妹不用毒害人，我们还可以是朋友。", v_meet: "meet_8_to_5.wav", v_imp: "imp_8_to_5.wav" },
+                6: { meet: "洪水过后，必有瘟疫。那是我最忙的时候。我看到她在角落里哭泣，便走过去给了她一颗能安神的草药。", imp: "我不怪她，灾难也是自然循环的一部分。她负责破坏，我负责修补。这是我们的宿命。", v_meet: "meet_8_to_6.wav", v_imp: "imp_8_to_6.wav" },
+                7: { meet: "白泽先生，我们是同类。我们经常一起下棋。他通晓未来，我不求长生，只争棋盘上的一时胜负。", imp: "唯一的知己。在这个疯狂的世界里，只有和他在一起，我才能感到片刻的安宁。", v_meet: "meet_8_to_7.wav", v_imp: "imp_8_to_7.wav" },
+                9: { meet: "她受伤时从不喊疼，只怕飞不起来。我治好了她的翅膀，她送了我一片最蓝的羽毛。", imp: "充满活力的生命，看着她，我就觉得自己年轻了。希望她能永远自由地飞翔。", v_meet: "meet_8_to_9.wav", v_imp: "imp_8_to_9.wav" }
             } 
         } 
     },
@@ -1088,16 +1020,16 @@ const CARDS = [
         story: { 
             bio: "<b>【使命】</b> 我是西王母的信使，永远奔波在路上。我见过昆仑的雪，也见过东海的浪。我的翅膀属于天空，我的使命是连接思念。<br><b>【自由】</b> 有人说我是仆人，不，我是风的宠儿！只要你呼唤，我就会乘风而来！没有什么能阻挡我送信的脚步！我想把这世间最美好的消息，带给每一个人！", 
             bg: "西王母梯几，而戴胜。其南有三青鸟，为西王母取食。我是神明的信使，传递着旨意与人间的相思。", 
-            voice: { bio: "story_9_bio.mp3", bg: "story_9_bg.mp3" }, 
+            voice: { bio: "story_9_bio.wav", bg: "story_9_bg.wav" }, 
             impressions: {
-                1: { meet: "她总是寄一些没有收件人的信，信上只有泪痕。我问她寄给谁，她让我把信烧了。", imp: "身上总是有股好闻的香粉味。虽然她总是凶巴巴的，但我知道她心里其实很渴望收到回信。", v_meet: "meet_9_to_1.mp3", v_imp: "imp_9_to_1.mp3" },
-                2: { meet: "有次我飞累了停在他背上休息，他以为我是大蚊子，拍了自己一巴掌。", imp: "只会吃的笨蛋。但他真的很暖和，冬天靠在他身上睡觉最舒服了。", v_meet: "meet_9_to_2.mp3", v_imp: "imp_9_to_2.mp3" },
-                3: { meet: "他想拦截我的信件，看看里面有没有敌情。我利用云层和他玩起了捉迷藏。", imp: "凶神恶煞的，但我飞得比他高，他不怕。而且他其实挺守信用的，说不抓我就真的不抓了。", v_meet: "meet_9_to_3.mp3", v_imp: "imp_9_to_3.mp3" },
-                4: { meet: "每次我不开心，就去找她蹭蹭。她就像个充电宝，抱一下就精神了。", imp: "世界上最可爱的小东西！看到她，我就觉得送信的疲惫都消失了。", v_meet: "meet_9_to_4.mp3", v_imp: "imp_9_to_4.mp3" },
-                5: { meet: "她想给我下毒，被我一翅膀扇飞了。我的风可是能吹散毒气的！", imp: "阴森森的老鼠，离我远点。但她做的伤药确实挺好用的，就是味道太臭。", v_meet: "meet_9_to_5.mp3", v_imp: "imp_9_to_5.mp3" },
-                6: { meet: "我在天上看到她孤独地游在水里，就给她扔了一颗来自昆仑山的宝石。", imp: "那家伙总是阴沉沉的。真想带她去云层之上晒晒太阳，也许她就不会那么想发大水了。", v_meet: "meet_9_to_6.mp3", v_imp: "imp_9_to_6.mp3" },
-                7: { meet: "每次送信给他，他都要拉着我问东问西，还考我地理知识。", imp: "啰嗦的先生，像我爷爷一样。但他给的零食很好吃，我就勉强听他唠叨两句吧。", v_meet: "meet_9_to_7.mp3", v_imp: "imp_9_to_7.mp3" },
-                8: { meet: "我的翅膀受了伤，是她一点点帮我治好的。她动作很轻，生怕弄疼了我。", imp: "让人安心的姐姐。只要有她在队伍里，我就敢飞得更快、更远，因为我知道无论受多重的伤，她都能治好我。", v_meet: "meet_9_to_8.mp3", v_imp: "imp_9_to_8.mp3" }
+                1: { meet: "她总是寄一些没有收件人的信，信上只有泪痕。我问她寄给谁，她让我把信烧了。", imp: "身上总是有股好闻的香粉味。虽然她总是凶巴巴的，但我知道她心里其实很渴望收到回信。", v_meet: "meet_9_to_1.wav", v_imp: "imp_9_to_1.wav" },
+                2: { meet: "有次我飞累了停在他背上休息，他以为我是大蚊子，拍了自己一巴掌。", imp: "只会吃的笨蛋。但他真的很暖和，冬天靠在他身上睡觉最舒服了。", v_meet: "meet_9_to_2.wav", v_imp: "imp_9_to_2.wav" },
+                3: { meet: "他想拦截我的信件，看看里面有没有敌情。我利用云层和他玩起了捉迷藏。", imp: "凶神恶煞的，但我飞得比他高，他不怕。而且他其实挺守信用的，说不抓我就真的不抓了。", v_meet: "meet_9_to_3.wav", v_imp: "imp_9_to_3.wav" },
+                4: { meet: "每次我不开心，就去找她蹭蹭。她就像个充电宝，抱一下就精神了。", imp: "世界上最可爱的小东西！看到她，我就觉得送信的疲惫都消失了。", v_meet: "meet_9_to_4.wav", v_imp: "imp_9_to_4.wav" },
+                5: { meet: "她想给我下毒，被我一翅膀扇飞了。我的风可是能吹散毒气的！", imp: "阴森森的老鼠，离我远点。但她做的伤药确实挺好用的，就是味道太臭。", v_meet: "meet_9_to_5.wav", v_imp: "imp_9_to_5.wav" },
+                6: { meet: "我在天上看到她孤独地游在水里，就给她扔了一颗来自昆仑山的宝石。", imp: "那家伙总是阴沉沉的。真想带她去云层之上晒晒太阳，也许她就不会那么想发大水了。", v_meet: "meet_9_to_6.wav", v_imp: "imp_9_to_6.wav" },
+                7: { meet: "每次送信给他，他都要拉着我问东问西，还考我地理知识。", imp: "啰嗦的先生，像我爷爷一样。但他给的零食很好吃，我就勉强听他唠叨两句吧。", v_meet: "meet_9_to_7.wav", v_imp: "imp_9_to_7.wav" },
+                8: { meet: "我的翅膀受了伤，是她一点点帮我治好的。她动作很轻，生怕弄疼了我。", imp: "让人安心的姐姐。只要有她在队伍里，我就敢飞得更快、更远，因为我知道无论受多重的伤，她都能治好我。", v_meet: "meet_9_to_8.wav", v_imp: "imp_9_to_8.wav" }
             } 
         } 
     }
@@ -1110,7 +1042,7 @@ const LEVELS = [
     // 1. 狌狌
     { 
         n: "狌狌", hp: 4500, atk: 350, img: "images/boss_1.png", 
-        voice: {start:"boss_1_start.mp3", half:"boss_1_half.mp3", dead:"boss_1_dead.mp3"},
+        voice: {start:"boss_1_start.wav", half:"boss_1_half.wav", dead:"boss_1_dead.wav"},
         lines: { start: "细皮嫩肉的小东西...", half: "吼——！！", dead: "力量...枯竭了..." },
         moves: [
             {n:"蛮力挥拳", p:50, val:1.0, txt:"挥舞重拳！", type:"tao-1"}, 
@@ -1121,7 +1053,7 @@ const LEVELS = [
     // 2. 帝江
     { 
         n: "帝江", hp: 8500, atk: 550, img: "images/boss_2.png", 
-        voice: {start:"boss_2_start.mp3", half:"boss_2_half.mp3", dead:"boss_2_dead.mp3"},
+        voice: {start:"boss_2_start.wav", half:"boss_2_half.wav", dead:"boss_2_dead.wav"},
         lines: { start: "回归...混沌...", half: "秩序...崩塌...", dead: "散作...虚无..." },
         moves: [
             {n:"混沌之触", p:40, val:1.0, dot:400, txt:"伸出触手...", type:"tao-2"}, 
@@ -1132,7 +1064,7 @@ const LEVELS = [
     // 3. 烛龙
     { 
         n: "烛龙", hp: 15000, atk: 750, img: "images/boss_3.png", 
-        voice: {start:"boss_3_start.mp3", half:"boss_3_half.mp3", dead:"boss_3_dead.mp3"},
+        voice: {start:"boss_3_start.wav", half:"boss_3_half.wav", dead:"boss_3_dead.wav"},
         lines: { start: "直视岁月的尽头？", half: "吾...永恒不灭。", dead: "时间...终结..." },
         moves: [
             {n:"时光凝视", p:40, val:1.4, txt:"凝视灵魂！", type:"fei-3"},
@@ -1143,7 +1075,7 @@ const LEVELS = [
     // 4. 相柳
     { 
         n: "相柳", hp: 24000, atk: 950, img: "images/boss_4.png", 
-        voice: {start:"boss_4_start.mp3", half:"boss_4_half.mp3", dead:"boss_4_dead.mp3"},
+        voice: {start:"boss_4_start.wav", half:"boss_4_half.wav", dead:"boss_4_dead.wav"},
         lines: { start: "皆为泽国...", half: "斩掉一个头还有八个...", dead: "不可能..." },
         moves: [
             {n:"九首齐攻", p:40, val:1.3, txt:"九头齐咬！", type:"qiong-1"}, 
@@ -1154,7 +1086,7 @@ const LEVELS = [
     // 5. 刑天
     {
         n: "刑天", hp: 36000, atk: 1300, img: "images/boss_5.png", 
-        voice: {start:"boss_5_start.mp3", half:"boss_5_half.mp3", dead:"boss_5_dead.mp3"},
+        voice: {start:"boss_5_start.wav", half:"boss_5_half.wav", dead:"boss_5_dead.wav"},
         lines: { start: "战魂...永不熄灭！", half: "痛快！痛快！", dead: "意志...长存！" },
         moves: [
             {n:"干戚之舞", p:50, val:1.5, txt:"挥舞巨斧！", type:"qiong-3"},
@@ -1165,7 +1097,7 @@ const LEVELS = [
     // 6. 蚩尤
     {
         n: "蚩尤", hp: 52000, atk: 1600, img: "images/boss_6.png", 
-        voice: {start:"boss_6_start.mp3", half:"boss_6_half.mp3", dead:"boss_6_dead.mp3"},
+        voice: {start:"boss_6_start.wav", half:"boss_6_half.wav", dead:"boss_6_dead.wav"},
         lines: { start: "吾乃兵主！", half: "值得我拔剑...", dead: "战意...流传..." },
         moves: [
             {n:"兵戈乱舞", p:40, val:2.0, txt:"万千兵刃！", type:"qiong-3"},
@@ -1179,54 +1111,17 @@ const XP_MAX = [100, 300, 9999];
 // ==========================================
 // 3. 视觉特效系统 (VFX)
 // ==========================================
-/* === 找到 const VFX = { ... } 里面的 trigger 函数，替换成下面这个 === */
 const VFX = {
-trigger(targetEl, type, color) {
-    if (!targetEl) return;
-    
-    // 1. 找到游戏主容器
-    const app = document.getElementById('game-app');
-    
-    // 2. 获取目标和容器的坐标
-    const rect = targetEl.getBoundingClientRect();
-    const appRect = app.getBoundingClientRect();
-    
-    // 3. 计算相对坐标 (关键！要把屏幕坐标转换回游戏内的 1920x1080 坐标系)
-    // 这里的 scale 必须和 resize() 函数里的 scale 逻辑一致，或者是通过除法反推
-    // 更简单的方法是：直接把特效加到 game-app 里面，而不是 body 里面
-    
-    const node = document.createElement('div');
-    node.className = `vfx-base vfx-${type}`; 
-    
-    // 🔴 计算修正：特效现在相对于 game-app 定位
-    // 我们需要获取 targetEl 在 game-app 内部的偏移量
-    // 这种算法比较通用：
-    
-    // 获取当前的缩放比例
-    const wrapper = document.getElementById('scale-wrapper');
-    // 解析 transform: scale(x)
-    let currentScale = 1;
-    if(wrapper.style.transform && wrapper.style.transform.includes('scale')) {
-        currentScale = parseFloat(wrapper.style.transform.split('(')[1]);
-    }
-
-    // 计算中心点 (相对于视口)
-    const centerX = rect.left + rect.width / 2;
-    const centerY = rect.top + rect.height / 2;
-
-    // 转换成相对于 app 容器的未缩放坐标
-    const relativeX = (centerX - appRect.left) / currentScale;
-    const relativeY = (centerY - appRect.top) / currentScale;
-
-    node.style.left = relativeX + 'px';
-    node.style.top = relativeY + 'px';
-
-    // 🔴 关键：把特效加到 'game-app' 里，而不是 'body'
-    // 这样它就会跟随游戏画面一起缩放，不会跑偏了
-    document.getElementById('game-app').appendChild(node);
-    
-    setTimeout(() => node.remove(), 1500); 
-},
+    trigger(targetEl, type, color) {
+        if (!targetEl) return;
+        const rect = targetEl.getBoundingClientRect();
+        const node = document.createElement('div');
+        node.className = `vfx-base vfx-${type}`; 
+        node.style.left = (rect.left + rect.width/2) + 'px';
+        node.style.top = (rect.top + rect.height/2) + 'px';
+        document.body.appendChild(node);
+        setTimeout(() => node.remove(), 1500); // 延长消除时间以适应长动画
+    },
     impact(target, type, color) { this.trigger(target, type, color); },
     ultScreen(color) {
         const s = document.getElementById('vfx-screen');
@@ -1257,11 +1152,11 @@ window.Game = {
 
     playVoice(id, type, customSrc = null) {
         const folder = 'audio/';
-        let fileName = customSrc ? customSrc : (id === 'boss' ? type : `v_${id}_${type}.mp3`);
+        let fileName = customSrc ? customSrc : (id === 'boss' ? type : `v_${id}_${type}.wav`);
         let src = folder + fileName;
         if (this.currentVoice) { this.currentVoice.pause(); this.currentVoice.currentTime = 0; }
         const audio = new Audio(src); audio.volume = this.voiceVol; 
-        audio.play().catch((e) => { if (src.endsWith('.mp3')) { new Audio(src.replace('.mp3', '.mp3')).play().catch(()=>{}); } });
+        audio.play().catch((e) => { if (src.endsWith('.wav')) { new Audio(src.replace('.wav', '.mp3')).play().catch(()=>{}); } });
         this.currentVoice = audio;
     },
     stopVoice() { if (this.currentVoice) { this.currentVoice.pause(); this.currentVoice.currentTime = 0; this.currentVoice = null; } },
@@ -1543,7 +1438,7 @@ window.Game = {
             if(r <= acc) { move = boss.moves[i]; moveIdx = i; break; } 
         }
 
-        const voiceFile = `boss_${this.lvl + 1}_move_${moveIdx + 1}.mp3`;
+        const voiceFile = `boss_${this.lvl + 1}_move_${moveIdx + 1}.wav`;
         this.playVoice('boss', null, voiceFile);
 
         this.spawnBanner('u-enemy', `⚠️ ${move.n}`);
@@ -1673,47 +1568,7 @@ window.Game = {
     },
     modal(title, desc, btns) { const m = document.getElementById('modal-msg'); document.getElementById('msg-t').innerText = title; document.getElementById('msg-d').innerText = desc; const bDiv = document.getElementById('msg-b'); bDiv.innerHTML = ''; btns.forEach(b => { const btn = document.createElement('button'); btn.className = 'btn'; btn.innerText = b.t; btn.onclick = () => { m.classList.add('hidden'); if (b.f) b.f(); }; bDiv.appendChild(btn); }); m.classList.remove('hidden'); },
     win() { this.lvl++; this.save(); this.showReward(); },
-    /* === 找到 showReward() 函数，替换成下面这个 === */
-
-    showReward() { 
-        const grid = document.getElementById('reward-grid');
-        grid.innerHTML = ''; 
-        
-        this.hand.forEach(c => { 
-            const el = document.createElement('div'); 
-            el.className = 'card-box'; 
-            
-            // 🔴 关键修复：强制设置卡牌宽度和高度
-            // 这样在 1920 的屏幕上，正好能放下 3 个 (500*3 + 间隙 < 1920)
-            el.style.width = '500px';  
-            el.style.height = 'auto';  // 高度自动，随内容撑开
-            el.style.flexShrink = '0'; // 禁止被挤压
-            
-            el.style.padding = '20px'; 
-            el.style.borderColor = c.def.color; 
-            
-            const up = this.upgrades[c.def.id] || {hp:0, atk:0, mp:0}; 
-            
-            el.innerHTML = `
-                <div class="c-img" style="height:250px; margin-bottom:15px;">
-                    <img src="images/card_${c.def.id}_human.png" style="width:100%; height:100%; object-fit:contain;">
-                </div>
-                <h3 style="color:${c.def.color}; text-align:center; font-size:32px; margin:10px 0;">${c.def.name}</h3>
-                <div style="font-size:18px; color:#aaa; margin-bottom:20px; text-align:center; line-height:1.6;">
-                    当前加成:<br> 
-                    <span style="color:#fff">HP+${up.hp}</span> | <span style="color:#fff">攻+${up.atk}%</span> | <span style="color:#fff">灵+${up.mp}</span>
-                </div>
-                <div style="display:flex; flex-direction:column; gap:10px;">
-                    <button class="btn" style="font-size:20px; padding:10px; min-width:auto; width:100%" onclick="Game.applyReward(${c.def.id}, 'hp')">❤️ 生命上限 +500</button>
-                    <button class="btn" style="font-size:20px; padding:10px; min-width:auto; width:100%" onclick="Game.applyReward(${c.def.id}, 'atk')">⚔️ 伤害 +15%</button>
-                    <button class="btn" style="font-size:20px; padding:10px; min-width:auto; width:100%" onclick="Game.applyReward(${c.def.id}, 'mp')">💧 初始灵力 +30</button>
-                </div>
-            `;
-            grid.appendChild(el); 
-        }); 
-        
-        this.show('scene-reward'); 
-    },
+    showReward() { const grid = document.getElementById('reward-grid'); grid.innerHTML = ''; this.hand.forEach(c => { const el = document.createElement('div'); el.className = 'card-box'; el.style.height = 'auto'; el.style.padding = '20px'; el.style.borderColor = c.def.color; const up = this.upgrades[c.def.id] || {hp:0, atk:0, mp:0}; el.innerHTML = `<div class="c-img" style="height:200px"><img src="images/card_${c.def.id}_human.png"></div><h3 style="color:${c.def.color};text-align:center;">${c.def.name}</h3><div style="font-size:14px; color:#aaa; margin-bottom:10px;">当前加成:<br> HP+${up.hp} | 攻+${up.atk}% | 灵+${up.mp}</div><button class="btn" style="font-size:16px; padding:5px; margin-bottom:5px; min-width:auto; width:100%" onclick="Game.applyReward(${c.def.id}, 'hp')">❤️ 生命上限 +500</button><button class="btn" style="font-size:16px; padding:5px; margin-bottom:5px; min-width:auto; width:100%" onclick="Game.applyReward(${c.def.id}, 'atk')">⚔️ 伤害 +15%</button><button class="btn" style="font-size:16px; padding:5px; margin-bottom:5px; min-width:auto; width:100%" onclick="Game.applyReward(${c.def.id}, 'mp')">💧 初始灵力 +30</button>`; grid.appendChild(el); }); this.show('scene-reward'); },
     applyReward(cardId, type) { if(!this.upgrades[cardId]) this.upgrades[cardId] = {hp:0, atk:0, mp:0}; if(type === 'hp') this.upgrades[cardId].hp += 500; else if(type === 'atk') this.upgrades[cardId].atk += 15; else if(type === 'mp') this.upgrades[cardId].mp += 30; this.save(); this.initBattle(); },
     addBuff(b){ if(!this.p.buffs.includes(b))this.p.buffs.push(b); },
     addDebuff(b){ if(!this.e.debuffs.includes(b))this.e.debuffs.push(b); },
