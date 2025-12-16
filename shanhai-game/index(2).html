@@ -5,15 +5,56 @@
     <title>异兽拓罗 (V9.5 传说剧情版)</title>
     <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=ZCOOL+XiaoWei&display=swap" rel="stylesheet">
     <style>
-    @font-face { font-family: 'MyTitleFont'; src: url('my_font.ttf'); }
+    @font-face { font-family: 'my_font'; src: url('my_font.ttf'); }
     :root { 
         --teal-dark: #0f2027; --teal-mid: #203a43; --teal-light: #2c5364;
         --gold: #e6c88b; --gold-dark: #b88a4d;
         --red: #d64f4f; --blue: #5fa8d3; --purple: #b388eb; --green: #6aba84;
         --panel-bg: rgba(15, 32, 39, 0.95);
     }
-    body { margin: 0; background: #000; overflow: hidden; font-family: 'Ma Shan Zheng', cursive; user-select: none; display: flex; justify-content: center; align-items: center; height: 100vh; color: #fff; }
-    #scale-wrapper { width: 1920px; height: 1080px; position: relative; flex-shrink: 0; transform-origin: center center; will-change: transform; }
+/* 1. Body 样式：只负责清空边距，不做背景处理，防止冲突 */
+body { 
+    margin: 0; 
+    overflow: hidden; 
+    background: #000; /* 底色黑色，防止加载闪烁 */
+    height: 100vh; 
+    width: 100vw;
+}
+
+/* 2. 新增：专门的背景层样式 (绝对稳固，不会跑偏) */
+#bg-layer {
+    position: fixed; /* 🔴 强制固定在窗口，不受任何干扰 */
+    top: 0; left: 0; 
+    width: 100%; height: 100%;
+    z-index: 0; /* 放在最底层 */
+    
+    /* 背景图设置 */
+    background: url('bg_new.jpg') center center no-repeat;
+    background-size: cover; /* 铺满全屏 */
+    
+    /* ✨ 模糊度调整：2px (比之前的4px更清晰，能看清人物，但有景深感) */
+    filter: blur(2px) brightness(0.6); 
+    
+    /* 稍微放大一点点，防止模糊边缘有白边 */
+    transform: scale(1.02); 
+}
+
+/* 3. 游戏容器样式：绝对居中 */
+#scale-wrapper { 
+    width: 1920px; 
+    height: 1080px; 
+    
+    /* ⭐ 核心居中代码 */
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%); /* 让中心点对准屏幕中心 */
+    
+    /* 配合 JS 的缩放逻辑，这里需要一点特殊处理 */
+    transform-origin: center center; 
+    
+    z-index: 10; /* 保证在背景层上面 */
+    box-shadow: 0 0 60px rgba(0,0,0,0.9); /* 黑色投影，把游戏主体托起来 */
+}
     #game-app { width: 100%; height: 100%; position: relative; background: #000; box-shadow: 0 0 100px #000; overflow: hidden; }
     
     .scene { position: absolute; top:0; left:0; width:100%; height:100%; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10; pointer-events: auto; }
@@ -21,7 +62,7 @@
     
     /* 标题样式 */
     .main-title { 
-        font-family: 'MyTitleFont', 'ZCOOL XiaoWei', serif; font-size: 160px; margin: 0 0 30px 0; letter-spacing: 25px; 
+        font-family: 'my_font', 'my_font', serif; font-size: 160px; margin: 0 0 30px 0; letter-spacing: 25px; 
         background: linear-gradient(to bottom, #fff 0%, #e6c88b 30%, #b88a4d 70%, #8a6e3e 100%); 
         -webkit-background-clip: text; -webkit-text-fill-color: transparent; 
         filter: drop-shadow(0 2px 0px #3e2723) drop-shadow(0 0 30px rgba(184, 138, 77, 0.6)); 
@@ -132,7 +173,7 @@
     .s-btn:hover { background: rgba(255,255,255,0.15); border-color: var(--gold); color: #fff; }
     .s-btn.ult { color: var(--gold); border-color: rgba(212, 175, 55, 0.5); font-weight: bold; }
     .s-btn.disabled { opacity: 0.3; pointer-events: none; filter: grayscale(1); }
-    .skill-banner { position: absolute; top: -80px; left: 50%; transform: translateX(-50%); background: linear-gradient(90deg, transparent, rgba(0,0,0,0.8), transparent); border-top: 1px solid var(--gold); border-bottom: 1px solid var(--gold); color: #fff; padding: 5px 60px; font-size: 36px; font-weight: bold; white-space: nowrap; text-shadow: 0 0 10px var(--gold); opacity: 0; pointer-events: none; z-index: 200; font-family: 'ZCOOL XiaoWei', serif; }
+    .skill-banner { position: absolute; top: -80px; left: 50%; transform: translateX(-50%); background: linear-gradient(90deg, transparent, rgba(0,0,0,0.8), transparent); border-top: 1px solid var(--gold); border-bottom: 1px solid var(--gold); color: #fff; padding: 5px 60px; font-size: 36px; font-weight: bold; white-space: nowrap; text-shadow: 0 0 10px var(--gold); opacity: 0; pointer-events: none; z-index: 200; font-family: 'my_font', serif; }
     .banner-anim { animation: bannerPop 1.5s forwards; }
     @keyframes bannerPop { 0%{opacity:0; transform:translate(-50%, 20px);} 10%{opacity:1; transform:translate(-50%, 0);} 80%{opacity:1; transform:translate(-50%, 0);} 100%{opacity:0; transform:translate(-50%, -20px);} }
     
@@ -142,7 +183,7 @@
     @keyframes screenShake { 0% { transform: translate(0, 0); } 10% { transform: translate(-10px, -10px); } 20% { transform: translate(10px, 10px); } 30% { transform: translate(-10px, 10px); } 40% { transform: translate(10px, -10px); } 50% { transform: translate(-10px, 0); } 60% { transform: translate(10px, 0); } 100% { transform: translate(0, 0); } }
     
     .card-name-mask { position: absolute; bottom: 0; left: 0; width: 100%; height: 80px; background: linear-gradient(to top, rgba(0,0,0,0.95) 20%, transparent); display: flex; align-items: flex-end; justify-content: center; padding-bottom: 15px; border-radius: 0 0 8px 8px; z-index: 2; pointer-events: none; }
-    .card-name-text { font-family: 'Ma Shan Zheng', cursive; text-shadow: 0 2px 4px #000; }
+    .card-name-text { font-family: 'my_font', cursive; text-shadow: 0 2px 4px #000; }
     
     /* 界面弹窗 */
     .modal { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.85); z-index: 2000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
@@ -153,7 +194,7 @@
     .sv-name-overlay { position: relative; width: 100%; background: none; text-align: center; padding: 10px 0; pointer-events: auto; flex-shrink: 0; }
     #sv-name { font-size: 40px !important; color: var(--gold); margin: 0; line-height: 1.2; text-shadow: 0 2px 4px #000; }
     #sv-role { font-size: 18px !important; color: #aaa; margin-top: 5px; font-family: sans-serif; letter-spacing: 2px; }
-    .sv-right { flex: 1; padding: 40px 50px; overflow-y: auto; font-family: 'Ma Shan Zheng', cursive; cursor: zoom-in; transition: background 0.2s; }
+    .sv-right { flex: 1; padding: 40px 50px; overflow-y: auto; font-family: 'my_font', cursive; cursor: zoom-in; transition: background 0.2s; }
     .sv-right:hover { background: rgba(255, 255, 255, 0.02); }
     .detail-view { display: flex; width: 1100px; height: 650px; background: var(--panel-bg); border: 2px solid var(--gold); border-radius: 12px; box-shadow: 0 0 60px rgba(0,0,0,0.8); overflow: hidden; position: relative; }
     .dv-img { width: 45%; height: 100%; background: #000; border-right: 1px solid var(--gold); display: flex; align-items: center; justify-content: center; }
@@ -188,7 +229,7 @@
     /* 书页阅读模式 */
     #book-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 5000; display: flex; justify-content: center; align-items: center; opacity: 0; pointer-events: none; transition: opacity 0.3s; backdrop-filter: blur(5px); }
     #book-overlay.active { opacity: 1; pointer-events: auto; }
-    .book-page { width: 900px; height: 90vh; background: #e8d0aa; background-image: linear-gradient(to right, rgba(0,0,0,0.05) 0%, transparent 5%, transparent 95%, rgba(0,0,0,0.05) 100%); box-shadow: 0 0 50px rgba(0,0,0,0.8), inset 0 0 30px rgba(139, 69, 19, 0.2); border-radius: 4px; padding: 60px 80px; box-sizing: border-box; overflow-y: auto; color: #3e2723; font-family: 'Ma Shan Zheng', cursive; transform: scale(0.9); transition: transform 0.3s; }
+    .book-page { width: 900px; height: 90vh; background: #e8d0aa; background-image: linear-gradient(to right, rgba(0,0,0,0.05) 0%, transparent 5%, transparent 95%, rgba(0,0,0,0.05) 100%); box-shadow: 0 0 50px rgba(0,0,0,0.8), inset 0 0 30px rgba(139, 69, 19, 0.2); border-radius: 4px; padding: 60px 80px; box-sizing: border-box; overflow-y: auto; color: #3e2723; font-family: 'my_font', cursive; transform: scale(0.9); transition: transform 0.3s; }
     #book-overlay.active .book-page { transform: scale(1); }
     .book-page .story-title { color: #5d4037; border-bottom-color: #8d6e63; font-size: 36px; margin-top: 50px; }
     .book-page .story-text { color: #4e342e; font-size: 26px; line-height: 2; text-indent: 2em; }
@@ -214,7 +255,7 @@
    ========================================= */
 
 /* 1. 伤害数字系统 */
-.float-num { position: absolute; font-family: 'ZCOOL XiaoWei', serif; font-weight: 900; pointer-events: none; z-index: 9999; text-shadow: 2px 2px 0 #000; transform: translate(-50%, -50%); white-space: nowrap; }
+.float-num { position: absolute; font-family: 'my_font', serif; font-weight: 900; pointer-events: none; z-index: 9999; text-shadow: 2px 2px 0 #000; transform: translate(-50%, -50%); white-space: nowrap; }
 .dmg-normal { font-size: 60px; color: #fff; animation: numPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
 .dmg-crit { font-size: 110px; color: #ffeb3b; background: linear-gradient(to bottom, #fff 30%, #ffcc00 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 10px #ff0000); animation: critExplode 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
 .dmg-heal { font-size: 50px; color: #69db7c; animation: healFloat 1.0s ease-out forwards; }
@@ -481,7 +522,7 @@
     position: absolute;
     top: 50%; left: 50%;
     transform: translate(-50%, -50%);
-    font-family: 'MyTitleFont', 'ZCOOL XiaoWei', serif;
+    font-family: 'my_font', 'my_font', serif;
     font-size: 200px;
     color: rgba(255, 255, 255, 0.03); /* 极淡的背景字 */
     pointer-events: none;
@@ -569,7 +610,7 @@
     margin: 0 !important;
     font-size: 56px !important; /* 字体加大 */
     color: var(--gold) !important;
-    font-family: 'MyTitleFont', 'Ma Shan Zheng', cursive !important; /* 确保用书法体 */
+    font-family: 'my_font', 'my_font', cursive !important; /* 确保用书法体 */
     text-shadow: 0 2px 8px rgba(0,0,0,1), 0 0 20px rgba(0,0,0,0.8) !important; /* 强阴影，防止背景太亮看不清 */
     line-height: 1.1 !important;
     transform: translateY(5px); /* 稍微往下压一点 */
@@ -585,9 +626,14 @@
     text-shadow: 0 1px 2px #000 !important;
     text-transform: uppercase;
 }
+/* 强制所有按钮和输入框也用这个字体 */
+button, input, .btn {
+    font-family: 'my_font', serif !important;
+}
 </style>
 </head>
 <body>
+<div id="bg-layer"></div>
 
 <div id="scale-wrapper">
     <div id="game-app">
@@ -669,7 +715,7 @@
                             <div style="font-size:24px; color:var(--red); margin-top:10px; text-shadow: 1px 1px 2px #000;"><span id="name-e">BOSS</span> <span id="hp-txt-e"></span></div>
                             <div class="hp-bar"><div class="hp-fill hp-e" id="bar-e" style="width:100%"></div></div>
                         </div>
-                        <div style="font-size:100px; color:rgba(255,255,255,0.2); font-family:'ZCOOL XiaoWei'">VS</div>
+                        <div style="font-size:100px; color:rgba(255,255,255,0.2); font-family:'my_font'">VS</div>
                         <div class="unit" id="u-player">
                             <div class="skill-banner" id="banner-player"></div>
                             <div class="buffs" id="buff-p"></div>
@@ -731,7 +777,7 @@
         </div>
         
         <div class="dv-info">
-            <h1 id="dv-name" style="color:var(--gold); margin-top:0; font-size: 50px; font-family: 'ZCOOL XiaoWei', serif;"></h1>
+            <h1 id="dv-name" style="color:var(--gold); margin-top:0; font-size: 50px; font-family: 'my_font', serif;"></h1>
             <div id="dv-role" style="font-size: 20px; margin-bottom:25px; font-weight: bold; opacity: 0.8;"></div>
             
             <div style="width: 100%; height: 1px; background: rgba(255,255,255,0.2); margin-bottom: 20px;"></div>
@@ -765,29 +811,36 @@
 <div id="action-bar-container">
             </div>
         ```
-
-*(如果你已经有这行了，请确保它的 `id` 是 `action-bar-container` 且位置正确。如果拿不准，就把它粘在 `<div id="battle-scene">` 的下一行即可)*
-
----
-
-### 第三步：替换 JS 逻辑 (最重要的一步)
-
-**操作指南：**
-1.  滚动到文件**最底部**。
-2.  找到 `<script>` 标签。
-3.  从 `<script>` 一直到最后的 `</script>`，**全部删除**。
-4.  **复制** 下面这个超长的代码块，粘贴进去：
-
-```html
-<script>function resize() {
-        const scale = Math.min(window.innerWidth/1920, window.innerHeight/1080);
-        document.getElementById('scale-wrapper').style.transform = `scale(${scale})`;
+<script>
+// 🟢 核心修复函数：保证游戏永远居中且缩放正确
+    function resize() 
+{
+        // 1. 计算缩放比例
+        const scale = Math.min(window.innerWidth / 1920, window.innerHeight / 1080
+);
+        
+        // 2. 找到游戏容器
+        const wrapper = document.getElementById('scale-wrapper'
+);
+        
+        // 3. 🔴 关键一步：
+        // 先 translate(-50%, -50%) 让它居中
+        // 后 scale(...) 让它缩放
+        // 顺序不能错，且必须写在一起！
+        wrapper.style.transform = 
+`translate(-50%, -50%) scale(${scale})`
+;
     }
-    window.onresize = resize; setTimeout(resize, 100);
 
-// ==========================================
-// 1. 角色数据 (已合并：特效版的数值/VFX + 剧情版的故事/羁绊)
-// ==========================================
+    // 监听窗口变化
+    window
+.onresize = resize;
+    
+    // 强制执行两次，防止加载延迟导致第一次计算失败
+    resize();
+    setTimeout(resize, 100
+);
+
 const CARDS = [
     // --- 1. 九尾狐 (保留了特效版的 vfx: "fox-1" 和高数值，植入了剧情版故事) ---
     { 
@@ -1161,8 +1214,7 @@ window.Game = {
     },
     stopVoice() { if (this.currentVoice) { this.currentVoice.pause(); this.currentVoice.currentTime = 0; this.currentVoice = null; } },
     shakeScreen() { document.getElementById('game-app').classList.remove('shake-screen'); void document.getElementById('game-app').offsetWidth; document.getElementById('game-app').classList.add('shake-screen'); },
-
-    init() { const resize = () => { document.getElementById('scale-wrapper').style.transform = `scale(${Math.min(window.innerWidth/1920, window.innerHeight/1080)})`; }; window.onresize = resize; resize(); this.checkSave(); },
+init() { const resize = () => { document.getElementById('scale-wrapper').style.transform = `scale(${Math.min(window.innerWidth/1920, window.innerHeight/1080)})`; }; window.onresize = resize; resize(); this.checkSave(); },
     checkSave() { try { const s = localStorage.getItem('shanhai_v7'); if(s) { const d = JSON.parse(s); document.getElementById('save-msg').classList.remove('hidden'); document.getElementById('save-lvl').innerText = d.lvl + 1; this.upgrades = d.upgrades || {}; } } catch(e){} },
     show(id) { document.querySelectorAll('.scene').forEach(el=>el.classList.add('hidden')); document.getElementById(id).classList.remove('hidden'); document.getElementById('modal-msg').classList.add('hidden'); },
     toMenu() { this.checkSave(); this.show('scene-menu'); const a = document.getElementById('bgm-player'); if(a.src.includes('battle')||a.paused){a.src='bgm.mp3';a.play().catch(()=>{});} },
