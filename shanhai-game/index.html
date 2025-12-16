@@ -3,27 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <title>异兽拓罗 (V9.5 传说剧情版)</title>
-    <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=ZCOOL+XiaoWei&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Long+Cang&display=swap" rel="stylesheet">
     <style>
   /* === ⭐ 终极方案：全站统一使用【站酷小薇】 === */
 
-/* 1. 核弹级指令：强制游戏里【所有东西】都变成站酷小薇字体 */
+/* ============================================================
+   ⭐ 全站字体统一：狂野龙苍体 (Long Cang)
+   ============================================================ */
+
+/* 1. 核弹级指令：强制所有元素使用龙苍体 */
 * {
-    font-family: 'ZCOOL XiaoWei', serif !important;
+    font-family: 'Long Cang', cursive !important;
 }
 
-/* 2. 按钮专修补丁：解决“按键文字没变”的问题
-   (按钮通常很顽固，必须单独点名强制修改) */
-button, input, .btn, .s-btn, .level-btn {
-    font-family: 'ZCOOL XiaoWei', serif !important;
-    font-weight: bold; /* 加粗一点，让按钮文字更显眼 */
-    letter-spacing: 2px; /* 字间距稍微拉开，更有高级感 */
+/* 2. 顽固元素补丁：防止按钮和输入框不听话 */
+body, button, input, textarea, select, .btn, .s-btn, .level-btn, .card-name-text, .story-text, h1, h2, h3, .float-num {
+    font-family: 'Long Cang', cursive !important;
 }
 
-/* 3. 故事阁修正：解决“故事阁有两种文字”的问题
-   (强制把标题和正文都统一，防止混用) */
-.story-title, .story-text, .sv-right, .book-page {
-    font-family: 'ZCOOL XiaoWei', serif !important;
+/* 3. 按钮专属优化 */
+/* 因为龙苍体比较潦草，需要字号大一点才霸气 */
+.btn, .level-btn {
+    font-size: 34px !important;     /* 字号加大 */
+    font-weight: normal !important; /* 书法字体自带粗细，不用加粗 */
+    letter-spacing: 4px !important; /* 拉开间距，更有意境 */
+    padding-top: 10px !important;   /* 书法体通常重心偏高，微调居中 */
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.6);
+}
+
+/* 4. 故事和正文优化 */
+/* 书法体做正文容易看不清，所以要加大字号和行距 */
+.story-text, .tooltip, .dv-info {
+    font-size: 24px !important;     /* 正文稍微大一点 */
+    line-height: 1.6 !important;    /* 行距拉开，防粘连 */
+    font-weight: normal !important;
+}
+
+/* 5. 战斗伤害数字 */
+.float-num {
+    font-weight: normal !important;
+    text-shadow: 3px 3px 0 #000; /* 加重描边，更有打击感 */
 }
 /* === 粘贴结束 === */
     :root { 
@@ -650,6 +669,77 @@ body {
 button, input, .btn {
     font-family: 'my_font', serif !important;
 }
+/* === 📚 书页阅读模式：文字显形补丁 === */
+
+/* 1. 强制【正文段落】变成黑色 */
+/* 你的生平和背景故事就是用的这个类名，之前是白色所以看不见 */
+.book-page .story-text {
+    color: #1a1a1a !important; /* 深灰色，比纯黑看着舒服 */
+    text-shadow: none !important; /* 去掉发光阴影，让字迹清晰 */
+    font-weight: bold !important; /* 加粗 */
+    display: block !important;    /* 确保显示 */
+}
+
+/* 2. 强制【小标题】变成深褐色 */
+/* (比如“生平”、“背景”这几个大字) */
+.book-page .story-title {
+    color: #5d4037 !important; /* 深褐色，配合纸张感 */
+    border-bottom-color: #8d6e63 !important; /* 下划线也变深色 */
+    text-shadow: none !important;
+}
+
+/* 3. 确保书页容器本身的字是黑的 */
+.book-page {
+    color: #000000 !important;
+}
+/* ✅ 强制按钮使用“站酷小薇”字体，不随波逐流 */
+/* ✅ 方案一：使用【隶书】，厚重古朴，最有神话感 */
+/* ✅ 方案二：使用【微软雅黑】，绝对工整、现代、清晰 */
+.btn {
+    font-family: 'Long Cang', cursive !important; /* 龙苍体 */
+    font-size: 32px !important;
+    font-weight: normal !important; /* 这个字体本身就很粗，不用加粗 */
+    letter-spacing: 4px !important;
+    color: #e6c88b !important;
+    text-shadow: 2px 2px 5px #000;
+}
+/* ============================================================
+   📖 书页阅读模式：【印象与羁绊】字体特修补丁
+   ============================================================ */
+
+/* 1. 强制【初识/印象】这几个小标题变黑、变大 */
+.book-page .rc-label, 
+.book-page .rc-label span {
+    color: #000000 !important;   /* 纯黑色，不再是白色 */
+    font-size: 22px !important;  /* 字号加大 */
+    font-weight: 900 !important; /* 特粗，醒目 */
+}
+
+/* 2. 强制【正文内容】变黑、变大 */
+.book-page .rc-text {
+    color: #1a1a1a !important;   /* 深黑色 */
+    font-size: 20px !important;  /* 正文字号加大，方便阅读 */
+    font-weight: bold !important; /* 加粗 */
+    line-height: 1.6 !important; /* 行距拉开 */
+    margin-top: 5px !important;
+}
+
+/* 3. 强制【对象名字】(例如: To 九尾狐) 变深色 */
+.book-page .rc-name {
+    color: #4e342e !important;   /* 深褐色 */
+    font-size: 24px !important;  /* 名字更大 */
+    border-bottom: 2px solid rgba(78, 52, 46, 0.3); /* 加个下划线区分 */
+    padding-bottom: 5px;
+    margin-bottom: 10px;
+}
+
+/* 4. 优化卡片容器：加深边框，让它在黄纸上更清楚 */
+.book-page .relation-card {
+    border: 2px solid #5d4037 !important; /* 深褐色边框 */
+    background: rgba(93, 64, 55, 0.05) !important; /* 微微的深色底纹 */
+    margin-bottom: 20px !important;
+    padding: 20px !important;
+}
 </style>
 </head>
 <body>
@@ -673,12 +763,10 @@ button, input, .btn {
             <div id="save-msg" style="color:#ddd; font-size: 20px; text-shadow: 2px 2px 4px #000; margin-top: 10px;" class="hidden">当前进度：第 <span id="save-lvl" style="color:#fff; font-weight:bold;"></span> 层</div>
             
             <div class="menu-bar">
-                <button class="btn" onclick="Game.toModes()">踏入洪荒</button>
-                
-                <button class="btn" onclick="Game.toGallery()">万兽图鉴</button>
-                
-                <button class="btn" onclick="Game.toStory()">故事阁</button>
-            </div>
+    <button class="btn" onclick="Game.toModes()">踏入洪荒</button>
+    <button class="btn" onclick="Game.toGallery()">万兽图鉴</button>
+    <button class="btn" onclick="Game.toStory()">故事阁</button>
+</div>
         </div>
 
         <div id="scene-modes" class="scene hidden scene-dark">
@@ -706,10 +794,26 @@ button, input, .btn {
             <h2 style="color:var(--gold); font-size:40px; margin-bottom:30px; text-shadow: 0 0 10px #000;">选择 3 位出战神兽</h2>
             <div id="grid-container"></div>
             <div style="margin-top:30px;">
-                <button class="btn" id="btn-deploy" onclick="Game.startRun()">出征 (0/3)</button>
+                <button id="btn-deploy" class="btn" disabled onclick="Game.startRun()">出征 (0/3)</button>
                 <button class="btn" onclick="Game.toMenu()" style="border-color:#666; color:#aaa;">返回</button>
             </div>
         </div>
+<div id="scene-modes" class="scene hidden scene-dark">
+    <h1 class="main-title">选择征程</h1>
+    <div style="display:flex; flex-direction:column; gap:30px; align-items:center;">
+        <button class="btn" onclick="Game.toLevels()">开始新征程</button>
+        <button class="btn" onclick="Game.loadRun()" id="btn-continue" style="display:none">继续战斗</button>
+    </div>
+    <button class="btn" style="position:absolute; top:40px; right:40px; min-width:auto; padding:10px 20px; font-size:20px !important;" onclick="Game.toDeck()">返回</button>
+</div>
+
+<div id="scene-levels" class="scene hidden scene-dark">
+    <h1 class="main-title">试炼选择</h1>
+    <div id="level-grid">
+        </div>
+    <button class="btn" style="position:absolute; top:40px; right:40px; min-width:auto; padding:10px 20px; font-size:20px !important;" onclick="Game.toModes()">返回</button>
+</div>
+
 
         <div id="scene-reward" class="scene hidden scene-dark">
             <h2 style="color:var(--gold); font-size: 50px; margin-bottom: 10px;">战斗胜利！</h2>
@@ -1223,27 +1327,91 @@ window.Game = {
     p: {hp:0, max:0, shield:0, buffs:[]}, e: {hp:0, max:0, dot:0, stun:false, debuffs:[], saidHalf:false}, 
     turnLocked: false, currentActor: 0, currentVoice: null, voiceVol: 0.8, upgrades: {}, 
 
+   // ============================================================
+    // 🎵 核心语音系统修复 (单例模式 + 自动停止)
+    // ============================================================
+
+   // ✅ 修复版：播放语音 (完美解决 MP3 备用音频关不掉的问题)
     playVoice(id, type, customSrc = null) {
+        // 1. 先让之前的闭嘴
+        this.stopVoice(); 
+
         const folder = 'audio/';
+        // 构造文件名
         let fileName = customSrc ? customSrc : (id === 'boss' ? type : `v_${id}_${type}.wav`);
         let src = folder + fileName;
-        if (this.currentVoice) { this.currentVoice.pause(); this.currentVoice.currentTime = 0; }
-        const audio = new Audio(src); audio.volume = this.voiceVol; 
-        audio.play().catch((e) => { if (src.endsWith('.wav')) { new Audio(src.replace('.wav', '.mp3')).play().catch(()=>{}); } });
+
+        // 创建音频对象
+        let audio = new Audio(src);
+        audio.volume = this.voiceVol;
+
+        // 2. 记录当前音频 (默认是这个 WAV)
         this.currentVoice = audio;
+
+        // 3. 尝试播放
+        let playPromise = audio.play();
+
+        if (playPromise !== undefined) {
+            playPromise.catch((e) => { 
+                // ⚠️ 如果 WAV 播放失败 (比如文件没找到)
+                if (src.endsWith('.wav')) { 
+                    console.log("WAV 播放失败，尝试播放 MP3...");
+                    
+                    // 创建备用的 MP3 播放器
+                    let mp3Src = src.replace('.wav', '.mp3');
+                    let mp3Audio = new Audio(mp3Src);
+                    mp3Audio.volume = this.voiceVol;
+                    
+                    // 播放 MP3
+                    mp3Audio.play().catch(()=>{}); 
+                    
+                    // 🔴 关键修复：把“当前语音”的指针，更新为这个新的 MP3！
+                    // 这样 stopVoice() 才能关掉它
+                    this.currentVoice = mp3Audio; 
+                } 
+            });
+        }
     },
-    stopVoice() { if (this.currentVoice) { this.currentVoice.pause(); this.currentVoice.currentTime = 0; this.currentVoice = null; } },
+
+    // 2. 停止语音：彻底清除当前语音
+    stopVoice() { 
+        if (this.currentVoice) { 
+            this.currentVoice.pause();       // 暂停
+            this.currentVoice.currentTime = 0; // 进度归零
+            this.currentVoice = null;        // 清空引用
+        } 
+    },
+
+    // 3. 场景/界面切换：增加【自动静音】功能
+    // 🔴 任何时候调用 this.show() (比如返回主页、去图鉴)，都会自动触发 stopVoice
+    show(id) { 
+        this.stopVoice(); // ✅ 关键修复：切换场景时，强制停止语音！
+        
+        document.querySelectorAll('.scene').forEach(el => el.classList.add('hidden')); 
+        document.getElementById(id).classList.remove('hidden'); 
+        document.getElementById('modal-msg').classList.add('hidden'); 
+        
+        // 如果是从故事阁或详情页出来，顺手把弹窗也关了，防止声音后台播放
+        document.getElementById('modal-story').classList.add('hidden');
+        document.getElementById('modal-detail').classList.add('hidden');
+    },
     shakeScreen() { document.getElementById('game-app').classList.remove('shake-screen'); void document.getElementById('game-app').offsetWidth; document.getElementById('game-app').classList.add('shake-screen'); },
 init() { const resize = () => { document.getElementById('scale-wrapper').style.transform = `scale(${Math.min(window.innerWidth/1920, window.innerHeight/1080)})`; }; window.onresize = resize; resize(); this.checkSave(); },
     checkSave() { try { const s = localStorage.getItem('shanhai_v7'); if(s) { const d = JSON.parse(s); document.getElementById('save-msg').classList.remove('hidden'); document.getElementById('save-lvl').innerText = d.lvl + 1; this.upgrades = d.upgrades || {}; } } catch(e){} },
     show(id) { document.querySelectorAll('.scene').forEach(el=>el.classList.add('hidden')); document.getElementById(id).classList.remove('hidden'); document.getElementById('modal-msg').classList.add('hidden'); },
     toMenu() { this.checkSave(); this.show('scene-menu'); const a = document.getElementById('bgm-player'); if(a.src.includes('battle')||a.paused){a.src='bgm.mp3';a.play().catch(()=>{});} },
-    toModes() { this.show('scene-modes'); },
+   toModes() { 
+    this.show('scene-modes'); 
+    // 检查是否有存档，如果有，显示“继续战斗”按钮
+    const hasSave = localStorage.getItem('shanhai_v7');
+    const btn = document.getElementById('btn-continue');
+    if(btn) btn.style.display = hasSave ? 'block' : 'none';
+},
     toLevels() {
         let maxLvl = 0; try { const s = localStorage.getItem('shanhai_v7'); if(s) maxLvl = JSON.parse(s).lvl; } catch(e) {}
         const grid = document.getElementById('level-grid'); grid.innerHTML = '';
         LEVELS.forEach((l, i) => {
-            if (i <= maxLvl) grid.innerHTML += `<div class="level-btn" onclick="Game.startRun(${i})">第 ${i+1} 层：${l.n}<div>HP: ${l.hp} / ATK: ${l.atk}</div></div>`;
+            if (i <= maxLvl) grid.innerHTML += `<div class="level-btn" onclick="Game.prepareRun(${i})">第 ${i+1} 层：${l.n}<div>HP: ${l.hp} / ATK: ${l.atk}</div></div>`;
             else grid.innerHTML += `<div class="level-btn" style="opacity:0.3; pointer-events:none; filter:grayscale(1); border-color:#333;">第 ${i+1} 层：???<div>🔒 需通关前置试炼</div></div>`;
         });
         this.show('scene-levels');
@@ -1264,6 +1432,11 @@ init() { const resize = () => { document.getElementById('scale-wrapper').style.t
     },
     pick(id, el) { const idx=this.deck.indexOf(id); if(idx>-1) { this.deck.splice(idx,1); el.classList.remove('picked'); } else { if(this.deck.length>=3)return; this.deck.push(id); this.playVoice(id,'pick'); el.classList.add('picked'); } this.updateBtn(); },
     updateBtn() { const b=document.getElementById('btn-deploy'); const n=this.deck.length; b.innerText=`出征 (${n}/3)`; b.removeAttribute('disabled'); b.style.opacity=n===3?'1':'0.4'; b.style.cursor=n===3?'pointer':'not-allowed'; },
+// ✅ 新增函数：选完关卡后，记录层数，然后跳转去选卡
+    prepareRun(lvl) {
+        this.lvl = lvl; // 记录你选的关卡
+        this.toDeck();  // 跳转去选卡界面
+    },
     
     startRun(customLvl = 0) { 
         if(this.deck.length!==3) return; if (!this.upgrades) this.upgrades = {};
