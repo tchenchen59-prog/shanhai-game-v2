@@ -585,69 +585,6 @@
     text-shadow: 0 1px 2px #000 !important;
     text-transform: uppercase;
 }
-/* === 粘贴到 style 标签的最后面 === */
-
-/* =========================================
-   ▼▼▼ 1. 修复：奖励界面 (完美解决黑屏遮挡问题) ▼▼▼
-   ========================================= */
-
-/* 只在【没有】hidden 类时，才强制显示 */
-#scene-reward:not(.hidden) {
-    display: flex !important;          /* 必须是 flex 布局 */
-    flex-direction: column !important; /* 竖向排列 */
-    align-items: center !important;
-    justify-content: flex-start !important;
-    padding-top: 50px !important;
-    overflow-y: auto !important;       /* 允许滚动 */
-    height: 100vh !important;
-    z-index: 9999;                     /* 保证在最上层 */
-    background: rgba(10, 12, 15, 0.98); /* 确保背景不透明 */
-}
-
-/* 隐藏时，强制不显示 */
-#scene-reward.hidden {
-    display: none !important;
-}
-
-#scene-reward h2, #scene-reward p {
-    text-align: center;
-    width: 100%;
-}
-
-/* 2. 奖励卡片：隐藏图片，只留文字 */
-#reward-grid {
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: center !important;
-    gap: 20px !important;
-    padding-bottom: 100px !important;
-    height: auto !important;
-    width: 100%;
-}
-
-#reward-grid .card-box {
-    width: 90% !important;
-    max-width: 350px !important;
-    height: auto !important;
-    min-height: auto !important;
-    padding: 20px !important;
-    display: flex !important;
-    flex-direction: column !important;
-}
-
-/* 隐藏图片 */
-#reward-grid .c-img {
-    display: none !important; 
-}
-/* 3. 手机音量条优化：加粗轨道，加大按钮 */
-input[type=range] {
-    height: 20px !important;           /* 轨道变粗 */
-    margin: 5px 0;
-}
-input[type=range]::-webkit-slider-thumb {
-    width: 35px !important;            /* 按钮变大，方便手指按 */
-    height: 35px !important;
-}
 </style>
 </head>
 <body>
@@ -842,31 +779,15 @@ input[type=range]::-webkit-slider-thumb {
 4.  **复制** 下面这个超长的代码块，粘贴进去：
 
 ```html
-<script>// === 定义一个全局变量，记录当前缩放了多少 ===
-window.gameScale = 1; 
+<script>function resize() {
+        const scale = Math.min(window.innerWidth/1920, window.innerHeight/1080);
+        document.getElementById('scale-wrapper').style.transform = `scale(${scale})`;
+    }
+    window.onresize = resize; setTimeout(resize, 100);
 
-function resize() {
-    // 计算缩放比例
-    const scaleX = window.innerWidth / 1920;
-    const scaleY = window.innerHeight / 1080;
-    const scale = Math.min(scaleX, scaleY);
-    
-    window.gameScale = scale; // 更新全局变量
-    
-    // 应用缩放
-    const wrapper = document.getElementById('scale-wrapper');
-    wrapper.style.transform = `scale(${scale})`;
-    
-    // 强制让游戏画面居中
-    wrapper.style.left = ((window.innerWidth - 1920 * scale) / 2) + 'px';
-    wrapper.style.top = ((window.innerHeight - 1080 * scale) / 2) + 'px';
-    
-    // 强制让奖励界面填满屏幕高度
-    const rewardScene = document.getElementById('scene-reward');
-    if(rewardScene) rewardScene.style.height = window.innerHeight + 'px';
-}
-window.onresize = resize; 
-setTimeout(resize, 100);
+// ==========================================
+// 1. 角色数据 (已合并：特效版的数值/VFX + 剧情版的故事/羁绊)
+// ==========================================
 const CARDS = [
     // --- 1. 九尾狐 (保留了特效版的 vfx: "fox-1" 和高数值，植入了剧情版故事) ---
     { 
@@ -1188,59 +1109,39 @@ const LEVELS = [
 const XP_MAX = [100, 300, 9999];
 
 // ==========================================
-// 3. 视觉特效系统 (VFX) - 完整修复版
+// 3. 视觉特效系统 (VFX)
 // ==========================================
 const VFX = {
     trigger(targetEl, type, color) {
         if (!targetEl) return;
         const rect = targetEl.getBoundingClientRect();
-        
-        // 计算中心点
-        const centerX = rect.left + rect.width / 2;
-        const centerY = rect.top + rect.height / 2;
-
         const node = document.createElement('div');
         node.className = `vfx-base vfx-${type}`; 
-        
-        // 修正位置和缩放
-        node.style.left = centerX + 'px';
-        node.style.top = centerY + 'px';
-        node.style.transform = `translate(-50%, -50%) scale(${window.gameScale})`; 
-        
+        node.style.left = (rect.left + rect.width/2) + 'px';
+        node.style.top = (rect.top + rect.height/2) + 'px';
         document.body.appendChild(node);
-        setTimeout(() => node.remove(), 1500);
+        setTimeout(() => node.remove(), 1500); // 延长消除时间以适应长动画
     },
-
-    // ⬇️ 之前丢失的两个重要函数，必须补回来！
     impact(target, type, color) { this.trigger(target, type, color); },
-    
     ultScreen(color) {
         const s = document.getElementById('vfx-screen');
         if(s) { s.style.backgroundColor = color; s.style.opacity = 0.5; setTimeout(() => s.style.opacity = 0, 400); }
         const app = document.getElementById('game-app'); app.classList.remove('ult-shake'); void app.offsetWidth; app.classList.add('ult-shake');
     },
-    // ⬆️ 补回完毕
-
     floatNum(el, val, type="normal") {
         if(!el) return;
-        const rect = el.getBoundingClientRect();
-        const d = document.createElement('div'); 
-        d.className = 'float-num';
-        
+        const d = document.createElement('div'); d.className = 'float-num';
         if (type === 'crit') { d.innerText = `💥 ${val}!`; d.className += ' dmg-crit'; }
         else if (type === 'heal') { d.innerText = `+${val}`; d.className += ' dmg-heal'; }
         else { d.innerText = `${val}`; d.className += ' dmg-normal'; }
-
-        // 随机偏移 + 缩放修正
-        const rndX = (Math.random() - 0.5) * 50 * window.gameScale;
-        
+        const rect = el.getBoundingClientRect();
+        const rndX = (Math.random() - 0.5) * 80;
         d.style.left = (rect.left + rect.width/2 + rndX) + 'px';
         d.style.top = (rect.top + rect.height/3) + 'px';
-        d.style.transform = `translate(-50%, -50%) scale(${window.gameScale})`; 
-        
         document.body.appendChild(d); setTimeout(() => d.remove(), 1000);
     }
-}; // ⬅️ 之前就是少了这里的 "};" 导致报错
+};
+
 // ==========================================
 // 4. 游戏核心逻辑
 // ==========================================
@@ -1249,56 +1150,19 @@ window.Game = {
     p: {hp:0, max:0, shield:0, buffs:[]}, e: {hp:0, max:0, dot:0, stun:false, debuffs:[], saidHalf:false}, 
     turnLocked: false, currentActor: 0, currentVoice: null, voiceVol: 0.8, upgrades: {}, 
 
-    // === 找到 Game 对象里的 playVoice，替换为这个 ===
-   // === 替换原来的 playVoice 函数 ===
     playVoice(id, type, customSrc = null) {
-        // 1. 停止上一句
-        this.stopVoice();
-
-        // 🔴 关键设置：你的音频文件在哪里？
-        // 如果文件在 audio 文件夹里，请保留 'audio/'
-        // 如果文件和 html 在同一个目录，请改成 '' (就是两个单引号)
-        const folder = 'audio/'; 
-        
-        // 生成文件名
+        const folder = 'audio/';
         let fileName = customSrc ? customSrc : (id === 'boss' ? type : `v_${id}_${type}.wav`);
-        let fullPath = folder + fileName;
-
-        // 2. 创建音频对象
-        const audio = new Audio(fullPath);
-        
-        // 3. 设置音量
-        audio.volume = this.voiceVol; 
+        let src = folder + fileName;
+        if (this.currentVoice) { this.currentVoice.pause(); this.currentVoice.currentTime = 0; }
+        const audio = new Audio(src); audio.volume = this.voiceVol; 
+        audio.play().catch((e) => { if (src.endsWith('.wav')) { new Audio(src.replace('.wav', '.mp3')).play().catch(()=>{}); } });
         this.currentVoice = audio;
-        
-        // 4. 尝试播放
-        const playPromise = audio.play();
-        
-        if (playPromise !== undefined) {
-            playPromise.catch(error => {
-                // 🔴 调试模式：如果手机上没声音，这里会弹窗告诉你原因！
-                // 等修好后，可以把下面这行 alert 删掉
-                // alert("播放失败！我在找这个文件：" + fullPath);
-
-                console.warn("播放失败:", fullPath, error);
-
-                // 自动回退：尝试播放 mp3
-                if (fileName.endsWith('.wav')) {
-                    const mp3Name = fileName.replace('.wav', '.mp3');
-                    const fallback = new Audio(folder + mp3Name);
-                    fallback.volume = this.voiceVol;
-                    this.currentVoice = fallback;
-                    fallback.play().catch(e => {
-                        // 如果 mp3 也失败了，那肯定是文件没放对位置
-                        console.log("MP3也失败了");
-                    });
-                }
-            });
-        }
     },
     stopVoice() { if (this.currentVoice) { this.currentVoice.pause(); this.currentVoice.currentTime = 0; this.currentVoice = null; } },
     shakeScreen() { document.getElementById('game-app').classList.remove('shake-screen'); void document.getElementById('game-app').offsetWidth; document.getElementById('game-app').classList.add('shake-screen'); },
-init() { this.checkSave(); },
+
+    init() { const resize = () => { document.getElementById('scale-wrapper').style.transform = `scale(${Math.min(window.innerWidth/1920, window.innerHeight/1080)})`; }; window.onresize = resize; resize(); this.checkSave(); },
     checkSave() { try { const s = localStorage.getItem('shanhai_v7'); if(s) { const d = JSON.parse(s); document.getElementById('save-msg').classList.remove('hidden'); document.getElementById('save-lvl').innerText = d.lvl + 1; this.upgrades = d.upgrades || {}; } } catch(e){} },
     show(id) { document.querySelectorAll('.scene').forEach(el=>el.classList.add('hidden')); document.getElementById(id).classList.remove('hidden'); document.getElementById('modal-msg').classList.add('hidden'); },
     toMenu() { this.checkSave(); this.show('scene-menu'); const a = document.getElementById('bgm-player'); if(a.src.includes('battle')||a.paused){a.src='bgm.mp3';a.play().catch(()=>{});} },
@@ -1768,36 +1632,8 @@ init() { this.checkSave(); },
     pause() { this.turnLocked = true; this.modal("暂停", "游戏已暂停", [{t: "继续", f: () => { this.turnLocked = false; }}, {t: "退出战斗", f: () => { this.toMenu(); }}]); }
 };
 
-// === 替换最底部的这两个函数 ===
-
-// 音乐音量控制
-window.setMusicVol = function(v) {
-    console.log("设置音乐音量:", v);
-    const a = document.getElementById('bgm-player');
-    if (a) {
-        a.volume = parseFloat(v);
-        // 如果用户拖动音量条，且音乐是暂停的，尝试唤醒播放
-        if (a.volume > 0 && a.paused) {
-            // 确保 src 存在
-            if (!a.getAttribute('src')) a.src = 'bgm.mp3'; 
-            a.play().catch(e => console.warn("BGM播放受阻:", e));
-        }
-    } else {
-        console.error("找不到 id='bgm-player' 的元素！");
-    }
-};
-
-// 语音音量控制
-window.setVoiceVol = function(v) {
-    console.log("设置语音音量:", v);
-    const val = parseFloat(v);
-    Game.voiceVol = val; 
-    
-    // 实时改变正在说的话
-    if (Game.currentVoice) {
-        Game.currentVoice.volume = val;
-    }
-};
+function setMusicVol(v){ const a=document.getElementById('bgm-player'); a.volume=v; if(v>0&&a.paused)a.play().catch(()=>{}); }
+function setVoiceVol(v){ Game.voiceVol=v; if(Game.currentVoice)Game.currentVoice.volume=v; }
 window.addEventListener('click', e=>{ if(e.target.closest('.btn')||e.target.closest('.s-btn')||e.target.closest('.card-box')){ const s=document.getElementById('se-click'); if(s){s.currentTime=0;s.play().catch(()=>{});} } });
 Game.init(); Game.toMenu();
 </script>
