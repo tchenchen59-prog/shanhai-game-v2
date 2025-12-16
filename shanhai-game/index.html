@@ -5,7 +5,27 @@
     <title>异兽拓罗 (V9.5 传说剧情版)</title>
     <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=ZCOOL+XiaoWei&display=swap" rel="stylesheet">
     <style>
-    @font-face { font-family: 'my_font'; src: url('my_font.ttf'); }
+  /* === ⭐ 终极方案：全站统一使用【站酷小薇】 === */
+
+/* 1. 核弹级指令：强制游戏里【所有东西】都变成站酷小薇字体 */
+* {
+    font-family: 'ZCOOL XiaoWei', serif !important;
+}
+
+/* 2. 按钮专修补丁：解决“按键文字没变”的问题
+   (按钮通常很顽固，必须单独点名强制修改) */
+button, input, .btn, .s-btn, .level-btn {
+    font-family: 'ZCOOL XiaoWei', serif !important;
+    font-weight: bold; /* 加粗一点，让按钮文字更显眼 */
+    letter-spacing: 2px; /* 字间距稍微拉开，更有高级感 */
+}
+
+/* 3. 故事阁修正：解决“故事阁有两种文字”的问题
+   (强制把标题和正文都统一，防止混用) */
+.story-title, .story-text, .sv-right, .book-page {
+    font-family: 'ZCOOL XiaoWei', serif !important;
+}
+/* === 粘贴结束 === */
     :root { 
         --teal-dark: #0f2027; --teal-mid: #203a43; --teal-light: #2c5364;
         --gold: #e6c88b; --gold-dark: #b88a4d;
