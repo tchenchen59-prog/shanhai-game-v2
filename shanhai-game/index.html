@@ -1330,47 +1330,33 @@ window.Game = {
     // 🎵 核心语音系统修复 (单例模式 + 自动停止)
     // ============================================================
 
-   // ✅ 修复版：播放语音 (完美解决 MP3 备用音频关不掉的问题)
-    playVoice(id, type, customSrc = null) {
-        // 1. 先让之前的闭嘴
-        this.stopVoice(); 
+ // 在 Game 对象里定义一个全局的 voicePlayer
+voicePlayer: new Audio(), 
 
-        const folder = 'audio/';
-        // 构造文件名
-        let fileName = customSrc ? customSrc : (id === 'boss' ? type : `v_${id}_${type}.mp3`);
-        let src = folder + fileName;
+playVoice(id, type, customSrc = null) {
+    // 1. 停止上一个语音
+    this.stopVoice(); 
 
-        // 创建音频对象
-        let audio = new Audio(src);
-        audio.volume = this.voiceVol;
+    const folder = 'audio/';
+    let fileName = customSrc ? customSrc : (id === 'boss' ? type : `v_${id}_${type}.mp3`);
+    let src = folder + fileName;
 
-        // 2. 记录当前音频 (默认是这个 mp3)
-        this.currentVoice = audio;
-
-        // 3. 尝试播放
-        let playPromise = audio.play();
-
-        if (playPromise !== undefined) {
-            playPromise.catch((e) => { 
-                // ⚠️ 如果 mp3 播放失败 (比如文件没找到)
-                if (src.endsWith('.mp3')) { 
-                    console.log("mp3 播放失败，尝试播放 MP3...");
-                    
-                    // 创建备用的 MP3 播放器
-                    let mp3Src = src.replace('.mp3', '.mp3');
-                    let mp3Audio = new Audio(mp3Src);
-                    mp3Audio.volume = this.voiceVol;
-                    
-                    // 播放 MP3
-                    mp3Audio.play().catch(()=>{}); 
-                    
-                    // 🔴 关键修复：把“当前语音”的指针，更新为这个新的 MP3！
-                    // 这样 stopVoice() 才能关掉它
-                    this.currentVoice = mp3Audio; 
-                } 
-            });
-        }
-    },
+    // 2. 复用同一个 Audio 对象，而不是 new Audio()
+    // 这样浏览器不需要频繁创建/销毁对象
+    this.voicePlayer.src = src;
+    this.voicePlayer.volume = this.voiceVol;
+    
+    // 3. 播放
+    let playPromise = this.voicePlayer.play();
+    if (playPromise !== undefined) {
+        playPromise.catch((e) => {
+            console.log("音频播放被打断或失败 (正常现象)");
+        });
+    }
+    
+    // 4. 更新引用（其实现在 currentVoice 也就是 voicePlayer 了）
+    this.currentVoice = this.voicePlayer;
+},
 
     // 2. 停止语音：彻底清除当前语音
     stopVoice() { 
@@ -1424,7 +1410,8 @@ init() { const resize = () => { document.getElementById('scale-wrapper').style.t
         CARDS.forEach(card => {
             const el = document.createElement('div'); el.className = 'card-box'; el.style.borderColor = card.color;
             el.onclick = () => this.pick(card.id, el);
-            el.innerHTML = `<div class="role-badge ${card.type==='atk'?'bg-red':(card.type==='def'?'bg-blue':'bg-purple')}">${card.role}</div><div class="c-img" style="flex:1; display:flex; align-items:center; justify-content:center; overflow:hidden;"><img src="images/card_${card.id}_human.png" style="width:100%; height:100%; object-fit:cover;"></div><div class="card-name-mask"><div class="card-name-text" style="color:${card.color}; font-size:26px; font-weight:bold; transition:0.3s;">${card.name}</div></div>`;
+            el.innerHTML = `<div class="role-badge ${card.type==='atk'?'bg-red':(card.type==='def'?'bg-blue':'bg-purple')}">${card.role}</div><div class="c-img" style="flex:1; display:flex; align-items:center; justify-content:center; overflow:hidden;"><img src=
+"images/card_${c.id}_human.png" decoding="async" loading="lazy"" decoding="async" loading="lazy"" style="width:100%; height:100%; object-fit:cover;"></div><div class="card-name-mask"><div class="card-name-text" style="color:${card.color}; font-size:26px; font-weight:bold; transition:0.3s;">${card.name}</div></div>`;
             c.appendChild(el);
         });
         this.updateBtn(); this.show('scene-deck'); 
@@ -1437,12 +1424,57 @@ init() { const resize = () => { document.getElementById('scale-wrapper').style.t
         this.toDeck();  // 跳转去选卡界面
     },
     
-    startRun(customLvl = 0) { 
-        if(this.deck.length!==3) return; if (!this.upgrades) this.upgrades = {};
-        this.sp = 3; this.round = 1; 
-        this.hand = this.deck.map(id => { const def = CARDS.find(c=>c.id===id); if(!def) return null; const up = this.upgrades[id] || {mp:0, hp:0, atk:0}; return { def:def, mp:50+up.mp, lv:1, xp:0, el:null }; }).filter(c => c !== null); 
-        this.lvl = customLvl; this.initBattle(); this.updateSP();
-    },
+  // 修改 Game.startRun 函数
+startRun(customLvl = 0) {
+    if(this.deck.length !== 3) return;
+    
+    // 1. 先显示一个简单的“战斗准备中...”提示，防止白屏
+    const btn = document.getElementById('btn-deploy');
+    const oldText = btn.innerText;
+    btn.innerText = "正在部署...";
+    btn.disabled = true;
+
+    // 2. 计算出这场战斗【真正需要】的图片
+    const neededImages = [];
+    
+    // A. 选中的3个角色的图片 (Beast/Q/Human 三种形态)
+    this.deck.forEach(id => {
+        neededImages.push(`images/card_${id}_human.png`);
+        neededImages.push(`images/card_${id}_q.png`);
+        neededImages.push(`images/card_${id}_beast.png`);
+    });
+    
+    // B. 当前关卡的 Boss 图片
+    const bossLvl = customLvl || this.lvl;
+    const bossImg = LEVELS[bossLvl].img; // 例如 "images/boss_1.png"
+    neededImages.push(bossImg);
+    
+    // C. 战斗背景
+    neededImages.push('battle_bg.jpg');
+
+    // 3. 执行精准预加载
+    let loaded = 0;
+    neededImages.forEach(src => {
+        const img = new Image();
+        img.src = src;
+        img.onload = img.onerror = () => {
+            loaded++;
+            if(loaded === neededImages.length) {
+                // 全部加载完毕，才正式进入战斗
+                this._realStartRun(customLvl); // 👈 调用原本的逻辑
+            }
+        };
+    });
+},
+
+// 把原本 startRun 里的逻辑剪切到这个新函数里
+_realStartRun(customLvl) {
+     // ... 这里放原本 startRun 里剩下的代码 ...
+     // ... 记得最后把按钮文字改回来（虽然已经切场景了看不到）...
+     if (!this.upgrades) this.upgrades = {};
+     this.sp = 3; this.round = 1; 
+     // ... (其余代码) ...
+}
 
     initBattle(isLoad=false) {
         const aud=document.getElementById('bgm-player'); if(!aud.src.includes('battle_bgm.mp3')){aud.src='battle_bgm.mp3';aud.play().catch(()=>{});}
@@ -1482,7 +1514,9 @@ init() { const resize = () => { document.getElementById('scale-wrapper').style.t
             const forms = ['beast', 'q', 'human']; 
             const formIdx = Math.min(2, Math.max(0, (obj.lv || 1) - 1));
             const imgPath = `images/card_${obj.def.id}_${forms[formIdx]}.png`;
-            el.innerHTML = `<div class="card-level">Lv.${obj.lv}</div><div class="c-img"><img id="ci-${idx}" src="${imgPath}"></div><div class="card-mask"><div style="color:${obj.def.color};font-size:20px;font-weight:bold;text-align:center;">${obj.def.name}</div><div class="mp-bar"><div class="mp-val" id="mp-${idx}" style="width:${obj.mp}%"></div></div><div class="xp-bar"><div class="xp-val" id="xp-${idx}" style="width:0%"></div></div></div><div class="skill-menu" id="sm-${idx}">${btns}</div>`;
+            el.innerHTML = `<div class="card-level">Lv.${obj.lv}</div><div class="c-img"><img id=
+"ci-${idx}" src="${imgPath}" decoding="async"
+>"></div><div class="card-mask"><div style="color:${obj.def.color};font-size:20px;font-weight:bold;text-align:center;">${obj.def.name}</div><div class="mp-bar"><div class="mp-val" id="mp-${idx}" style="width:${obj.mp}%"></div></div><div class="xp-bar"><div class="xp-val" id="xp-${idx}" style="width:0%"></div></div></div><div class="skill-menu" id="sm-${idx}">${btns}</div>`;
             hz.appendChild(el); obj.el=el;
         });
 
