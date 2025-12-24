@@ -2,6 +2,7 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>异兽拓罗 (V9.5 传说剧情版)</title>
     <style>
   /* === ⭐ 终极方案：全站统一使用【站酷小薇】 === */
@@ -50,48 +51,27 @@ body, button, input, textarea, select, .btn, .s-btn, .level-btn, .card-name-text
         --red: #d64f4f; --blue: #5fa8d3; --purple: #b388eb; --green: #6aba84;
         --panel-bg: rgba(15, 32, 39, 0.95);
     }
-/* 1. Body 样式：只负责清空边距，不做背景处理，防止冲突 */
+/* 1. 强制背景全黑，多余空间不显示白色 */
 body { 
     margin: 0; 
+    padding: 0;
     overflow: hidden; 
-    background: #000; /* 底色黑色，防止加载闪烁 */
-    height: 100vh; 
+    background-color: #000000; /* 黑色背景 */
     width: 100vw;
+    height: 100vh;
+    display: flex;             /* 弹性布局 */
+    justify-content: center;   /* 水平居中 */
+    align-items: center;       /* 垂直居中 */
 }
 
-/* 2. 新增：专门的背景层样式 (绝对稳固，不会跑偏) */
-#bg-layer {
-    position: fixed; /* 🔴 强制固定在窗口，不受任何干扰 */
-    top: 0; left: 0; 
-    width: 100%; height: 100%;
-    z-index: 0; /* 放在最底层 */
-    
-    /* 背景图设置 */
-    background: url('bg_new.jpg') center center no-repeat;
-    background-size: cover; /* 铺满全屏 */
-    
-    /* ✨ 模糊度调整：2px (比之前的4px更清晰，能看清人物，但有景深感) */
-    filter: blur(2px) brightness(0.6); 
-    
-    /* 稍微放大一点点，防止模糊边缘有白边 */
-    transform: scale(1.02); 
-}
-
-/* 3. 游戏容器样式：绝对居中 */
+/* 2. 游戏容器：强制固定尺寸，利用 JS 缩放 */
 #scale-wrapper { 
     width: 1920px; 
     height: 1080px; 
-    
-    /* ⭐ 核心居中代码 */
-    position: absolute;
-    top: 50%; left: 50%;
-    transform: translate(-50%, -50%); /* 让中心点对准屏幕中心 */
-    
-    /* 配合 JS 的缩放逻辑，这里需要一点特殊处理 */
-    transform-origin: center center; 
-    
-    z-index: 10; /* 保证在背景层上面 */
-    box-shadow: 0 0 60px rgba(0,0,0,0.9); /* 黑色投影，把游戏主体托起来 */
+    position: relative;        /* 相对定位即可，因为 body 已经居中了 */
+    flex-shrink: 0;            /* 防止被挤压 */
+    box-shadow: 0 0 50px #000; /* 边缘阴影遮丑 */
+    transform-origin: center center; /* 从中心缩放 */
 }
     #game-app { width: 100%; height: 100%; position: relative; background: #000; box-shadow: 0 0 100px #000; overflow: hidden; }
     
@@ -935,35 +915,39 @@ button, input, .btn {
             </div>
         ```
 <script>
-// 🟢 核心修复函数：保证游戏永远居中且缩放正确
-    function resize() 
-{
-        // 1. 计算缩放比例
-        const scale = Math.min(window.innerWidth / 1920, window.innerHeight / 1080
-);
-        
-        // 2. 找到游戏容器
-        const wrapper = document.getElementById('scale-wrapper'
-);
-        
-        // 3. 🔴 关键一步：
-        // 先 translate(-50%, -50%) 让它居中
-        // 后 scale(...) 让它缩放
-        // 顺序不能错，且必须写在一起！
-        wrapper.style.transform = 
-`translate(-50%, -50%) scale(${scale})`
-;
-    }
+/* ========================================================
+   🔴 终极适配代码：适合 HBuilderX 强制横屏打包
+   ======================================================== */
+function resize() {
+    // 1. 获取手机屏幕现在的宽高
+    var winW = window.innerWidth;
+    var winH = window.innerHeight;
 
-    // 监听窗口变化
-    window
-.onresize = resize;
+    // 2. 游戏设计的原始尺寸
+    var gameW = 1920;
+    var gameH = 1080;
+
+    // 3. 计算“全显示”比例 (关键算法)
+    // Math.min 意思是：在“宽适配”和“高适配”里选一个更小的比例
+    // 这样能保证游戏一定能全部塞进屏幕里，绝不会被切掉
+    var scale = Math.min(winW / gameW, winH / gameH);
+
+    // 4. 应用缩放
+    var wrapper = document.getElementById('scale-wrapper');
+    wrapper.style.transform = "scale(" + scale + ")";
     
-    // 强制执行两次，防止加载延迟导致第一次计算失败
-    resize();
-    setTimeout(resize, 100
-);
+    // 5. 再次强制居中 (双重保险)
+    // 因为用了 scale，有时候浏览器定位会飘，这里修正一下
+    wrapper.style.left = "auto";
+    wrapper.style.top = "auto";
+}
 
+// 启动监听
+window.addEventListener('resize', resize);
+
+// H5打包有时候横屏反应慢，我们多检测几次，确保万无一失
+setInterval(resize, 500); // 每0.5秒检查一次屏幕大小
+resize(); // 立即执行一次
 const CARDS = [
     // --- 1. 九尾狐 (保留了特效版的 vfx: "fox-1" 和高数值，植入了剧情版故事) ---
     { 
